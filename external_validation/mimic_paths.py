@@ -1,41 +1,41 @@
 # --- internal paths --- #
-mimic_root_dir = '/cluster/work/grlab/clinical/mimic/MIMIC-III/cdb_1.4/'
-root_dir = '/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/'
+mimic_root_dir = "/data/harry/mimiciii/"
+root_dir = "/data/harry/mimiciii/validation/"
 
 # --- all about mimic --- #
-source_data = mimic_root_dir + 'source_data/'
-derived = mimic_root_dir + 'derived_stephanie/'
-chartevents_path = source_data + 'CHARTEVENTS.csv'
-labevents_path = source_data + 'LABEVENTS.csv'
-outputevents_path = source_data + 'OUTPUTEVENTS.csv'
-inputevents_cv_path = source_data + 'INPUTEVENTS_CV.csv'
-inputevents_mv_path = source_data + 'INPUTEVENTS_MV.csv'
-datetimeevents_path = source_data + 'DATETIMEEVENTS.csv'
-procedureevents_mv_path = source_data + 'PROCEDUREEVENTS_MV.csv'
-admissions_path = source_data + 'ADMISSIONS.csv'
-patients_path = source_data + 'PATIENTS.csv'
-icustays_path = source_data + 'ICUSTAYS.csv'
-services_path = source_data + 'SERVICES.csv'
-csv_folder = derived + 'derived_csvs/'
+source_data = mimic_root_dir
+derived = mimic_root_dir + "derived_harry/"
+chartevents_path = mimic_root_dir + "CHARTEVENTS.csv"
+labevents_path = mimic_root_dir + "LABEVENTS.csv"
+outputevents_path = mimic_root_dir + "OUTPUTEVENTS.csv"
+inputevents_cv_path = mimic_root_dir + "INPUTEVENTS_CV.csv"
+inputevents_mv_path = mimic_root_dir + "INPUTEVENTS_MV.csv"
+datetimeevents_path = mimic_root_dir + "DATETIMEEVENTS.csv"
+procedureevents_mv_path = mimic_root_dir + "PROCEDUREEVENTS_MV.csv"
+admissions_path = mimic_root_dir + "ADMISSIONS.csv"
+patients_path = mimic_root_dir + "PATIENTS.csv"
+icustays_path = mimic_root_dir + "ICUSTAYS.csv"
+services_path = mimic_root_dir + "SERVICES.csv"
+csv_folder = derived + "derived_csvs/"
 
 # --- all about our data on leomed --- #
-validation_dir = root_dir + 'external_validation/'
-misc_dir = root_dir + 'misc_derived/stephanie/'
-vis_dir = validation_dir + 'vis/'
+validation_dir = root_dir + "external_validation/"
+misc_dir = root_dir + "misc_derived/harry/"
+vis_dir = validation_dir + "vis/"
 
-D_ITEMS_path = validation_dir + 'ref_lists/D_ITEMS.csv'
-D_LABITEMS_path = validation_dir + 'ref_lists/D_LABITEMS.csv'
-GDOC_path = validation_dir + 'ref_lists/mimic_vars.csv'
+D_ITEMS_path = validation_dir + "ref_lists/D_ITEMS.csv"
+D_LABITEMS_path = validation_dir + "ref_lists/D_LABITEMS.csv"
+GDOC_path = validation_dir + "ref_lists/mimic_vars.csv"
 
-chunks_file = validation_dir + 'chunks.csv'
+chunks_file = validation_dir + "chunks.csv"
 
-csvs_dir = validation_dir + 'csvs/'
-hdf5_dir = validation_dir + 'hdf5/'
+csvs_dir = validation_dir + "csvs/"
+hdf5_dir = validation_dir + "hdf5/"
 # mimic is always reduced
-merged_dir = validation_dir + 'merged/'
-endpoints_dir = validation_dir + 'endpoints/'
+merged_dir = validation_dir + "merged/"
+endpoints_dir = validation_dir + "endpoints/"
 
-predictions_dir = validation_dir + 'predictions/'
+predictions_dir = validation_dir + "predictions/"
 
-id2string = root_dir + 'misc_derived/visualisation/id2string_v6.npy'
-mid2string = root_dir + 'misc_derived/visualisation/mid2string_v6.npy'
+# id2string = root_dir + "misc_derived/visualisation/id2string_v6.npy"
+# mid2string = root_dir + "misc_derived/visualisation/mid2string_v6.npy"

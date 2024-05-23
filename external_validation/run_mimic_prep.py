@@ -2,7 +2,7 @@
 # author: stephanie hyland
 # this is the wrapper for running the mimic preprocessing
 
-version = '181023'
+version = "181023"
 
 import extract_data_from_mimic as em
 
@@ -18,8 +18,9 @@ em.merge_tables(version=version)
 em.remove_impossible_values(version=version)
 
 # chunk
-import chunk
-chunk.build_chunk_file(version=version)
-chunk.chunk_up_merged_file(version=version)
+import chunk_val
+
+chunk_val.build_chunk_file(version=version)
+chunk_val.chunk_up_merged_file(version=version)
 
 # next, do endpoints etc...
