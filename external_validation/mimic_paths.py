@@ -37,5 +37,5 @@ endpoints_dir = validation_dir + "endpoints/"
 
 predictions_dir = validation_dir + "predictions/"
 
-# id2string = root_dir + "misc_derived/visualisation/id2string_v6.npy"
-# mid2string = root_dir + "misc_derived/visualisation/mid2string_v6.npy"
+id2string = root_dir + "misc_derived/visualisation/id2string_v6.npy"
+mid2string = root_dir + "misc_derived/visualisation/mid2string_v6.npy"

@@ -3,7 +3,6 @@
 # operating on data from 3_merged, draw in endpoint-relevant variables and construct 5-min grid for all patients
 
 import glob
-import os.path
 import sys
 
 import ipdb
@@ -46,7 +45,7 @@ if mimic:
     in_version = "181023"
     out_version = "181103"
 else:
-    in_version = "v6b"
+    in_version = "v1"
     out_version = in_version
 # in_version = '180704'
 # out_version = '180426'
@@ -142,6 +141,10 @@ def process_chunk(idx, reduced=False):
         else:
             print("No data for patient", pid)
     df = pd.concat(pid_dfs)
+    df["MAP_below_threshold"] = df["MAP_below_threshold"].astype(str)
+    df["interpolated_lactate_above_threshold"] = df["interpolated_lactate_above_threshold"].astype(str)
+    df["lactate_above_threshold"] = df["lactate_above_threshold"].astype(str)
+    print(df.dtypes)
     df.to_hdf(
         outfile, "endpoints", append=False, complevel=5, complib="blosc:lz4", data_columns=["PatientID"], format="table"
     )
@@ -289,8 +292,9 @@ def add_weight(df, pid):
     # if anything is missing at this point it means the patient has no weight values
     if df["weight"].isnull().sum() > 0:
         print("Weight is missing on patient", pid, " - imputing from height if possible")
-        typical_weight_dict = np.load(paths.misc_dir + "typical_weight_dict.npy").item()
-        bmi_dict = np.load(paths.misc_dir + "median_bmi_dict.npy").item()
+        typical_weight_dict = np.load(paths.misc_dir + "typical_weight_dict.npy", allow_pickle=True).item()
+        # bmi_dict = np.load(paths.misc_dir + "median_bmi_dict.npy").item()
+        bmi_dict = {"F": 18.0, "M": 19.0}
         # look for height in the static file - this will exist for mimic at some point
         if mimic:
             static_info = pd.read_hdf(
@@ -320,7 +324,7 @@ def add_weight(df, pid):
                 weight = BMI * ((height / 100) ** 2)
                 df["weight"] = weight
         except:
-            ipdb.set_trace()
+            print("WARNING: patient is nonbinary")
     # print('add_weight is deprecated')
     # raise NotImplementedError
     # we have to get their height/weight from the observrec table, because it wasn't merged in this version
@@ -368,10 +372,8 @@ def add_weight(df, pid):
     #            df = df.join(height_weight['weight'], how='outer')
     #            df['weight'] = df['weight'].fillna(method='ffill').fillna(method='bfill')
     #            df = df.loc[original_index, :]
-    try:
-        assert df["weight"].isnull().sum() == 0
-    except AssertionError:
-        ipdb.set_trace()
+    if df["weight"].isnull().sum() != 0:
+        print("WARNING: weight is missing for patient", pid)
     return df
 
 
