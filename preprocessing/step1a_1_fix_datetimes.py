@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-import os
 import gc
-
-import pandas as pd
-import numpy as np
-
+import os
 import sys
-sys.path.append('../utils')
-import preproc_utils
 
+import numpy as np
+import pandas as pd
+
+sys.path.append('../utils')
 import matplotlib.pyplot as plt
+import preproc_utils
 
 
 def date_correction(new_year, new_month, new_day, old_month):

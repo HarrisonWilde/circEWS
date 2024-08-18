@@ -1,30 +1,31 @@
 
 ''' ML feature generation, saving X/y for supervised learning'''
 
-import psutil
+import argparse
+import gc
+import multiprocessing as mp
 import os
 import os.path
 import random
-import timeit
-import gc
-import multiprocessing as mp
-import time
 import sys
-import argparse
-
-import tables
+import time
+import timeit
 import warnings
-warnings.simplefilter('ignore', tables.NaturalNameWarning)
 
-import pandas as pd
-import numpy as np
-import scipy as sp
-import scipy.stats as sp_stats
+import psutil
+import tables
+
+warnings.simplefilter('ignore', tables.NaturalNameWarning)
 
 import circews.classes.feat_gen as bern_tf_features
 import circews.classes.feat_gen_nan as bern_tf_features_nan
 import circews.functions.util.filesystem as mlhc_fs
 import circews.functions.util.io as mlhc_io
+import numpy as np
+import pandas as pd
+import scipy as sp
+import scipy.stats as sp_stats
+
 
 def is_df_sorted(df, colname):
     return (np.array(df[colname].diff().dropna(),dtype=np.float64) >=0).all()
@@ -194,7 +195,7 @@ def parse_cmd_args():
     VARENC_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/varencoding_map_v6.pickle"
     META_VARPROP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_reduced_v6b"
     VARPROP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_v6b"
-    PHARMA_ACTING_PERIOD_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/stephanie/pharma_acting_period_v6_meta.npy"
+    PHARMA_ACTING_PERIOD_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/harry/pharma_acting_period_v6_meta.npy"
 
     # Output paths
     LOG_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/log"

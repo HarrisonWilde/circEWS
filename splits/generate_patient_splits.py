@@ -4,15 +4,15 @@ in absolute time with respect to admission time, and the 5 temporal
 splits are defined by absolute time of admission.
 '''
 
-import random
-import csv
 import argparse
+import csv
+import random
 
+import circews.functions.static as bern_static
+import circews.functions.util.io as mlhc_io
 import numpy as np
 import pandas as pd
 
-import circews.functions.util.io as mlhc_io
-import circews.functions.static as bern_static
 
 def generate_patient_splits(configs):
 
@@ -53,7 +53,7 @@ def generate_patient_splits(configs):
             local_dict["train"]=train_pids
             local_dict["val"]=val_pids
             local_dict["test"]=test_pids
-            out_dict["random_{}".format(sidx)]=local_dict
+            out_dict["temporal_{}".format(sidx+1)]=local_dict
 
         if not configs["debug_mode"]:
             mlhc_io.save_pickle(out_dict, configs["mimic_data_split_binary_path"])
@@ -186,12 +186,12 @@ def parse_cmd_args():
     BERN_PID_INCLUDED_BASE_LIST_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_filtered.csv"
     BERN_ENDPOINT_LIST_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/pipeline_diagnostics/patients_with_endpoints_v6b.txt"
     BERN_GENERAL_DATA_TABLE_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/1_hdf5_consent/180704/generaldata.h5"
-    MIMIC_ALL_PID_LIST_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/pids_with_endpoint_data.csv.181003"
+    MIMIC_ALL_PID_LIST_PATH="/data/harry/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.181023"
 
     # Output paths
     BERN_TEMPORAL_DATA_SPLIT_TEXT="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.tsv"
     BERN_TEMPORAL_DATA_SPLIT_BINARY="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.pickle"
-    MIMIC_DATA_SPLIT_BINARY="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/misc_derived/aux_exploration_split_190105.pickle"
+    MIMIC_DATA_SPLIT_BINARY="/data/harry/mimiciii/validation/misc_derived/temporal_split_180918.pickle"
 
     parser=argparse.ArgumentParser()
 

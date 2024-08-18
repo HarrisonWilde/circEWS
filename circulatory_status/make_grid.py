@@ -20,6 +20,7 @@ else:
     print("mimic:", mimic)
 if mimic:
     sys.path.append("../external_validation/")
+    sys.path.append("./external_validation/")
     import mimic_paths as paths
 
     # mimic is only reduced
@@ -119,6 +120,7 @@ def process_chunk(idx, reduced=False):
     """ """
     print("WARNING: if this chunk already exists, data will be duplicated")
     print(idx)
+    print(df_chunks.columns)
     pids = df_chunks.loc[df_chunks.ChunkfileIndex == idx, "PatientID"]
     pids = pd.DataFrame(pids)
     idx_start = min(pids["PatientID"])
@@ -168,39 +170,39 @@ def convert_drugs_to_rates(df, pid):
     """
     print("convert_drugs_to_rates is deprecated")
     raise NotImplementedError
-    for drug in drug_IDs:
-        df_drug = df[drug].dropna()
-        if df_drug.shape[0] == 0:
-            # nothing going on here, pass
-            df.loc[:, drug + "/min"] = 0
-            continue
-        # note, we can't say anything about the first time
-        if drug in bolus_or_tablet_IDs:
-            # bolus/tablet is assumed to operate over a 5 minute period, so we divide by 5 and forward fill for ONE time step
-            current_dose_per_minute = df_drug.values / 5
-        else:
-            minutes_elapsed = (df_drug.index[1:] - df_drug.index[:-1]).astype("timedelta64[s]") / 60
-            try:
-                assert df_drug.values[0] == 0
-            except AssertionError:
-                print(
-                    "WARNING: GivenDose was not 0 at the start. This is PROBABLY a Status 780 problem. DROPPING THIS MEASUREMENT."
-                )
-                bad_patients.write(str(int(pid)) + ",start_dose_not_0\n")
-                df_drug.values[0] = 0
-            current_dose_per_minute = df_drug.values[1:] / minutes_elapsed
-            # add a 0 to the start, as it should be in these infusions
-            current_dose_per_minute = np.concatenate([[0], current_dose_per_minute])
-        df_drug = pd.DataFrame({drug: df_drug, drug + "/min": current_dose_per_minute})
-        df = pd.concat([df, df_drug]).sort_index()
-        # fill based on bolus or not
-        if drug in bolus_or_tablet_IDs:
-            # forward fill for ONE stuep
-            df.loc[:, drug + "/min"] = df.loc[:, drug + "/min"].fillna(method="ffill", limit=1).fillna(0)
-        else:
-            # backwards fill, so the rate per minute is true for the whole region, and fill the rest with zeros
-            df.loc[:, drug + "/min"] = df.loc[:, drug + "/min"].fillna(method="bfill").fillna(0)
-    return df
+    # for drug in drug_IDs:
+    #     df_drug = df[drug].dropna()
+    #     if df_drug.shape[0] == 0:
+    #         # nothing going on here, pass
+    #         df.loc[:, drug + "/min"] = 0
+    #         continue
+    #     # note, we can't say anything about the first time
+    #     if drug in bolus_or_tablet_IDs:
+    #         # bolus/tablet is assumed to operate over a 5 minute period, so we divide by 5 and forward fill for ONE time step
+    #         current_dose_per_minute = df_drug.values / 5
+    #     else:
+    #         minutes_elapsed = (df_drug.index[1:] - df_drug.index[:-1]).astype("timedelta64[s]") / 60
+    #         try:
+    #             assert df_drug.values[0] == 0
+    #         except AssertionError:
+    #             print(
+    #                 "WARNING: GivenDose was not 0 at the start. This is PROBABLY a Status 780 problem. DROPPING THIS MEASUREMENT."
+    #             )
+    #             bad_patients.write(str(int(pid)) + ",start_dose_not_0\n")
+    #             df_drug.values[0] = 0
+    #         current_dose_per_minute = df_drug.values[1:] / minutes_elapsed
+    #         # add a 0 to the start, as it should be in these infusions
+    #         current_dose_per_minute = np.concatenate([[0], current_dose_per_minute])
+    #     df_drug = pd.DataFrame({drug: df_drug, drug + "/min": current_dose_per_minute})
+    #     df = pd.concat([df, df_drug]).sort_index()
+    #     # fill based on bolus or not
+    #     if drug in bolus_or_tablet_IDs:
+    #         # forward fill for ONE stuep
+    #         df.loc[:, drug + "/min"] = df.loc[:, drug + "/min"].fillna(method="ffill", limit=1).fillna(0)
+    #     else:
+    #         # backwards fill, so the rate per minute is true for the whole region, and fill the rest with zeros
+    #         df.loc[:, drug + "/min"] = df.loc[:, drug + "/min"].fillna(method="bfill").fillna(0)
+    # return df
 
 
 def merge_process_drugs(df, pid):
@@ -293,8 +295,7 @@ def add_weight(df, pid):
     if df["weight"].isnull().sum() > 0:
         print("Weight is missing on patient", pid, " - imputing from height if possible")
         typical_weight_dict = np.load(paths.misc_dir + "typical_weight_dict.npy", allow_pickle=True).item()
-        # bmi_dict = np.load(paths.misc_dir + "median_bmi_dict.npy").item()
-        bmi_dict = {"F": 18.0, "M": 19.0}
+        bmi_dict = np.load(paths.misc_dir + "median_bmi_dict.npy", allow_pickle=True).item()
         # look for height in the static file - this will exist for mimic at some point
         if mimic:
             static_info = pd.read_hdf(

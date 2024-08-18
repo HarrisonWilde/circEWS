@@ -1,35 +1,33 @@
 ''' Imputation of a single batch of patients'''
 
+import argparse
+import concurrent.futures as conc_futures
+import csv
+import datetime
 import gc
-import timeit
-import os.path
-import sys
+import glob
+import multiprocessing as mp
 import os
 import os.path
-import datetime
-import random
-import gc
-import psutil
-import multiprocessing as mp
-import concurrent.futures as conc_futures
-import time
-import csv
 import pickle
-import glob
-import argparse
+import random
+import sys
+import time
+import timeit
 
-import pandas as pd
-import numpy as np
-import scipy as sp
 import matplotlib
-matplotlib.use("pdf")
-import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import psutil
+import scipy as sp
 
+matplotlib.use("pdf")
 import circews.classes.imputer as bern_tf_impute
 import circews.classes.imputer_ffill as bern_tf_impute_ffill
 import circews.classes.imputer_none as bern_tf_impute_none
-
 import circews.functions.util.io as mlhc_io
+import matplotlib.pyplot as plt
+
 
 def is_df_sorted(df, colname):
     return (np.array(df[colname].diff().dropna(),dtype=np.float64) >=0).all()
@@ -173,31 +171,31 @@ def parse_cmd_args():
     parser=argparse.ArgumentParser()
 
     # Input paths
-    BERN_STATIC_INFO_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/1a_hdf5_clean/v6b/static.h5"
-    MIMIC_STATIC_INFO_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/merged/181023/static.h5"
-    TYPICAL_WEIGHT_DICT_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/stephanie/typical_weight_dict.npy"
-    MEDIAN_BMI_DICT_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/stephanie/median_bmi_dict.npy"
-    META_VARENCODING_MAP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_varencoding_map_v6.pickle"
-    VARENCODING_MAP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/varencoding_map_v6.pickle"
-    IMPUTATION_PARAM_DICT_REDUCED="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_reduced_v6b"
-    IMPUTATION_PARAM_DICT="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_v6b"
-    META_NORMALVAL_MAP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_normalval_map_v6.pickle"
-    NORMALVAL_MAP_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/normalval_map_v6.pickle"
-    BERN_REDUCED_MERGED_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/3_merged/v6b_top18_upsampled_downsampled_rev2_new/reduced" 
-    BERN_MERGED_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/3_merged/v6b_top18_upsampled_downsampled_rev2_new" 
-    MIMIC_REDUCED_MERGED_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/merged/181023/reduced"
-    MIMIC_MERGED_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/merged/181023"
-    TEMPORAL_DATA_SPLIT_BINARY="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/temporal_split_180918.pickle"
-    BERN_PID_BATCH_MAP_BINARY="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle"
-    MIMIC_PID_BATCH_MAP_BINARY="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/misc_derived/id_lists/chunks_181023.pickle"
-    MIMIC_ALL_PID_LIST_PATH="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/pids_with_endpoint_data.csv.181103"
+    BERN_STATIC_INFO_PATH="/data/harry/mimiciii/validation/1a_hdf5_clean/v6b/static.h5"
+    MIMIC_STATIC_INFO_PATH="/data/harry/mimiciii/validation/external_validation/merged/181023/static.h5"
+    TYPICAL_WEIGHT_DICT_PATH="/data/harry/mimiciii/validation/misc_derived/harry/typical_weight_dict.npy"
+    MEDIAN_BMI_DICT_PATH="/data/harry/mimiciii/validation/misc_derived/harry/median_bmi_dict.npy"
+    META_VARENCODING_MAP_PATH="/data/harry/mimiciii/validation/misc_derived/mhueser/meta_varencoding_map_v6.pickle"
+    VARENCODING_MAP_PATH="/data/harry/mimiciii/validation/misc_derived/mhueser/varencoding_map_v6.pickle"
+    IMPUTATION_PARAM_DICT_REDUCED="/data/harry/mimiciii/validation/misc_derived/mhueser/imputation_reduced_v6b"
+    IMPUTATION_PARAM_DICT="/data/harry/mimiciii/validation/misc_derived/mhueser/imputation_v6b"
+    META_NORMALVAL_MAP_PATH="/data/harry/mimiciii/validation/misc_derived/mhueser/meta_normalval_map_v6.pickle"
+    NORMALVAL_MAP_PATH="/data/harry/mimiciii/validation/misc_derived/mhueser/normalval_map_v6.pickle"
+    BERN_REDUCED_MERGED_PATH="/data/harry/mimiciii/validation/3_merged/v6b_top18_upsampled_downsampled_rev2_new/reduced" 
+    BERN_MERGED_PATH="/data/harry/mimiciii/validation/3_merged/v6b_top18_upsampled_downsampled_rev2_new" 
+    MIMIC_REDUCED_MERGED_PATH="/data/harry/mimiciii/validation/external_validation/merged/181023/reduced"
+    MIMIC_MERGED_PATH="/data/harry/mimiciii/validation/external_validation/merged/181023"
+    TEMPORAL_DATA_SPLIT_BINARY="/data/harry/mimiciii/validation/misc_derived/temporal_split_180918.pickle"
+    BERN_PID_BATCH_MAP_BINARY="/data/harry/mimiciii/validation/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle"
+    MIMIC_PID_BATCH_MAP_BINARY="/data/harry/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle"
+    MIMIC_ALL_PID_LIST_PATH="/data/harry/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.181103"
 
     # Output paths
-    BERN_IMPUTED_REDUCED_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/5_imputed/imputed_v6b_downsample_upsample_no_impute/reduced" 
-    BERN_IMPUTED_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/5_imputed/imputed_v6b_downsample_upsample_no_impute" 
-    MIMIC_IMPUTED_REDUCED_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/imputed/imputed_181023/reduced"
-    MIMIC_IMPUTED_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/imputed/imputed_181023"
-    LOG_DIR="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/log"
+    BERN_IMPUTED_REDUCED_DIR="/data/harry/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute/reduced" 
+    BERN_IMPUTED_DIR="/data/harry/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute" 
+    MIMIC_IMPUTED_REDUCED_DIR="/data/harry/mimiciii/validation/external_validation/imputed/imputed_181023/reduced"
+    MIMIC_IMPUTED_DIR="/data/harry/mimiciii/validation/external_validation/imputed/imputed_181023"
+    LOG_DIR="/data/harry/mimiciii/validation/misc_derived/mhueser/log"
 
     # Input paths
     parser.add_argument("--bern_static_info_path", default=BERN_STATIC_INFO_PATH, help="Path of static info to be loaded for the Bern data-set")

@@ -3,13 +3,14 @@
 # author: Stephanie Hyland
 # purpose: Visualise variables before endpoint onset.
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
-mpl.use("Agg")
-import matplotlib.pyplot as plt
 
+mpl.use("Agg")
 import pdb
+
+import matplotlib.pyplot as plt
 import paths
 
 imputed_dir = paths.root + '/5_imputed/imputed_180221/exploration/'

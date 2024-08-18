@@ -4,16 +4,16 @@ Pandas data frame to an output Pandas data-frame
 '''
 
 import os
-import sys
 import os.path
-
-import numpy as np
-import scipy as sp
-import pandas as pd
+import sys
 
 import circews.functions.forward_filling as bern_forward_fill
 import circews.functions.util.array as mlhc_array
 import circews.functions.util.math as mlhc_math
+import numpy as np
+import pandas as pd
+import scipy as sp
+
 
 class Timegridder:
     ''' 

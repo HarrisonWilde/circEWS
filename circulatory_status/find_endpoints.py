@@ -4,9 +4,10 @@
 
 # we can just load a batch of patients at once
 
+import ipdb
 import numpy as np
 import pandas as pd
-import ipdb
+
 
 def check_window_for_endpoint(df_segment, MAP_ID, window_size_in_minutes, grid_size_in_minutes, interp=True):
     """
@@ -17,7 +18,9 @@ def check_window_for_endpoint(df_segment, MAP_ID, window_size_in_minutes, grid_s
     assert df_segment.shape[0] == window_size_in_minutes/grid_size_in_minutes
     assert (df_segment.index[-1] - df_segment.index[0])/np.timedelta64(1, 's')/60 == (window_size_in_minutes - grid_size_in_minutes)       # implies 45 minutes covered using default values
     # check if there are any MAP measurements
-    if df_segment[MAP_ID].isnull().mean()[0] == 1:
+    # print("----------------")
+    # print(df_segment[MAP_ID])
+    if df_segment[MAP_ID].isnull().mean().iloc[0] == 1:
         print('[interp:', interp, '] WARNING: no MAP measurements in this segment')
         # there should not be any drugs ... right??
         try:

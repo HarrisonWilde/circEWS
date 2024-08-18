@@ -3,10 +3,11 @@ Generates a new PID list from the batch patient map and also saves binary
 versions of the PID and batch maps.
 '''
 
+import argparse
 import csv
 import pickle
-import argparse
 import sys
+
 
 def chunkfiles_to_binary(configs):
     fw_dict = {}
@@ -49,13 +50,13 @@ def parse_cmd_args():
     # Input paths
     parser.add_argument("--bern_chunk_file_input", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.csv", 
                         help="Chunk file text version input for the Bern database")
-    parser.add_argument("--mimic_chunk_file_input", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/chunks.csv.181023",
+    parser.add_argument("--mimic_chunk_file_input", default="/data/harry/mimiciii/validation/external_validation/chunks.csv.181023",
                         help="Chunk file text version input for the MIMIC database")
 
     # Output paths
     parser.add_argument("--bern_chunk_file_output", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle",
                         help="Chunk file pickle version output for the Bern database")
-    parser.add_argument("--mimic_chunk_file_output", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/misc_derived/id_lists/chunks_181023.pickle",
+    parser.add_argument("--mimic_chunk_file_output", default="/data/harry/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle",
                         help="Chunk file pickle version output for the MIMIC database")
 
     # Arguments

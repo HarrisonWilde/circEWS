@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import pandas as pd
-import numpy as np
-
 import gc
 import os
-
 import sys
+
+import numpy as np
+import pandas as pd
+
 sys.path.append('../utils')
-import preproc_utils
 import matplotlib.pyplot as plt
+import preproc_utils
 
 
 def cumul_val_to_rate(df, variable_ids):

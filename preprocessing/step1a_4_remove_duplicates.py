@@ -1,14 +1,14 @@
 #!/usr/bin/env python
-import pandas as pd
-import numpy as np
-
 import os
-
 import sys
-sys.path.append('../utils')
-import preproc_utils
 
+import numpy as np
+import pandas as pd
+
+sys.path.append('../utils')
 import argparse
+
+import preproc_utils
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-tbl_name')

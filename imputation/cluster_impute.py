@@ -2,13 +2,14 @@
 Cluster dispatcher script for the main batched imputation script
 '''
 
-import subprocess
+import argparse
 import os
 import os.path
+import subprocess
 import sys
-import argparse
 
 import circews.functions.util.filesystem as mlhc_fs
+
 
 def cluster_impute(configs):
     job_index=0
@@ -74,14 +75,14 @@ def parse_cmd_args():
                         help="Compute script to dispatch")
 
     # Output paths
-    parser.add_argument("--log_dir", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/log", help="Directory where to store log files")
-    parser.add_argument("--bern_imputed_reduced_dir", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/5_imputed/imputed_v6b_downsample_upsample_no_impute/reduced" ,
+    parser.add_argument("--log_dir", default="/data/harry/mimiciii/validation/misc_derived/mhueser/log", help="Directory where to store log files")
+    parser.add_argument("--bern_imputed_reduced_dir", default="/data/harry/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute/reduced" ,
                         help="Where to store the imputed data for reduced mode for the Bern data-set")
-    parser.add_argument("--bern_imputed_dir", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/5_imputed/imputed_v6b_downsample_upsample_no_impute",
+    parser.add_argument("--bern_imputed_dir", default="/data/harry/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute",
                         help="Where to store the imputed data for non-reduced mode for the Bern data-set")
-    parser.add_argument("--mimic_imputed_reduced_dir", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/imputed/imputed_181023/reduced", 
+    parser.add_argument("--mimic_imputed_reduced_dir", default="/data/harry/mimiciii/validation/external_validation/imputed/imputed_181023/reduced", 
                         help="Where to store imputed data for MIMIC data-set")
-    parser.add_argument("--mimic_imputed_dir", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/imputed/imputed_181023",
+    parser.add_argument("--mimic_imputed_dir", default="/data/harry/mimiciii/validation/external_validation/imputed/imputed_181023",
                         help="Where to store the imputed data for non-reduced mode for the MIMIC data-set")
 
     # Default arguments

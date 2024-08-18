@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-import pandas as pd
-import numpy as np
 import os
-
 import sys
+
+import numpy as np
+import pandas as pd
+
 sys.path.append('../utils')
 import preproc_utils
+
 
 def get_feature_mat(tbl_name, patient_id):
     input_path = os.path.join(preproc_utils.datapath, '2_pivoted', version, tbl_name)

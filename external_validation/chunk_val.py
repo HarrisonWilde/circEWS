@@ -2,11 +2,10 @@
 # author: stephanie hyland
 # chunk the merged file and also build the chunkfile
 
+import ipdb
+import mimic_paths
 import numpy as np
 import pandas as pd
-import ipdb
-
-import mimic_paths
 
 n_splits = 50
 

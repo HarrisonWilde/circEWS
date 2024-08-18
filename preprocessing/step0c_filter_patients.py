@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-import numpy as np
-import pandas as pd
 import os
 import sys
+
+import numpy as np
+import pandas as pd
+
 sys.path.append('../utils')
-import preproc_utils
+import argparse
 import pickle
 
+import preproc_utils
 
-import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-version')
 args = parser.parse_args()

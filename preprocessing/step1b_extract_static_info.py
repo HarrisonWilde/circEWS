@@ -1,15 +1,16 @@
 #!/usr/bin/env python
-import pandas as pd
-import numpy as np
-
 import gc
 import os
-
 import sys
+
+import numpy as np
+import pandas as pd
+
 sys.path.append('../utils')
+import argparse
+
 import preproc_utils
 
-import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-version')
 args = parser.parse_args()

@@ -3,16 +3,18 @@
     Authors: SH, with additions from MF/MH
 '''
 
+import argparse
+import glob
 import os
 import pdb
-import glob
-import argparse
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
-import matplotlib as mpl
+
 mpl.use("Agg")
 import matplotlib.pyplot as plt
+
 mpl.rcParams['pdf.fonttype'] = 42
 
 import paths

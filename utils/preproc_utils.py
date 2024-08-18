@@ -1,8 +1,8 @@
+from os.path import exists, join
+from time import clock
+
 import numpy as np
 import pandas as pd
-
-from os.path import join, exists
-from time import clock
 
 datapath = '/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/'
 data_version = '180822'
