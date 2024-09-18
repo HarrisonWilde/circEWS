@@ -1,1 +1,1 @@
-root_dir = "/data/harry/mimiciii/validation/"
+root_dir = "/data/qmia/mimiciii/validation/"

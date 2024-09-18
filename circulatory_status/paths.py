@@ -1,6 +1,6 @@
 #!/usr/bin/env ipython
 # paths
-root_dir = "/data/hirid/1.1.1/harry/"
+root_dir = "/data/hirid/1.1.1/qmia/"
 
 # clean_dir = root_dir + "1a_hdf5_clean/"
 # pivoted_dir = root_dir + "2_pivoted/"
@@ -11,7 +11,7 @@ endpoints_dir = root_dir + "endpoints_stage/"
 # predictions_dir = root_dir + "8_predictions/"
 
 # observrec = root_dir + "2_pivoted/prepro_observrec.h5"
-# misc_dir = root_dir + "misc_derived/harry/"
+# misc_dir = root_dir + "misc_derived/qmia/"
 
 chunks_file = root_dir + "misc_derived/patients_in_chunking.csv"
 

@@ -7,7 +7,7 @@ cols_to_keep = ["SUBJECT_ID", "CHARTTIME", "VALUE", "ITEMID"]
 # Initialize an empty dataframe to store the filtered data
 filtered_data = pd.DataFrame(columns=cols_to_keep)
 
-file_name = "/data/harry/mimiciii/CHARTEVENTS.csv"
+file_name = "/data/qmia/mimiciii/CHARTEVENTS.csv"
 
 # Define the chunk size
 chunksize = 10**6

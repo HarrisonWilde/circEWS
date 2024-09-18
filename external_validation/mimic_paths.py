@@ -1,10 +1,10 @@
 # --- internal paths --- #
-mimic_root_dir = "/data/harry/mimiciii/"
-root_dir = "/data/harry/mimiciii/validation/"
+mimic_root_dir = "/data/qmia/mimiciii/"
+root_dir = "/data/qmia/mimiciii/validation/"
 
 # --- all about mimic --- #
 source_data = mimic_root_dir
-derived = mimic_root_dir + "derived_harry/"
+derived = mimic_root_dir + "derived_qmia/"
 chartevents_path = mimic_root_dir + "CHARTEVENTS.csv"
 labevents_path = mimic_root_dir + "LABEVENTS.csv"
 outputevents_path = mimic_root_dir + "OUTPUTEVENTS.csv"
@@ -20,7 +20,7 @@ csv_folder = derived + "derived_csvs/"
 
 # --- all about our data on leomed --- #
 validation_dir = root_dir + "external_validation/"
-misc_dir = root_dir + "misc_derived/harry/"
+misc_dir = root_dir + "misc_derived/qmia/"
 vis_dir = validation_dir + "vis/"
 
 D_ITEMS_path = validation_dir + "ref_lists/D_ITEMS.csv"

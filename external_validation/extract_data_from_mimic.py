@@ -21,7 +21,9 @@ def load_reference_tables(gdoc=True):
             print("ERROR: issue loading reference from", ref_path)
             return False
         # d_reference = d_reference.loc[d_reference['include'] == True, :]
-        d_reference = d_reference.loc[:, ["include", "ITEM_ID", "varname (mimic?)", "mID", "table", "merge logic"]]
+        d_reference = d_reference.loc[
+            :, ["include", "ITEM_ID", "varname (mimic?)", "mID", "table", "merge logic"]
+        ]
         d_reference.rename({"varname (mimic?)": "varname"}, axis=1, inplace=True)
         d_reference["mID"] = d_reference["mID"].astype("str")
     else:
@@ -34,17 +36,27 @@ def load_reference_tables(gdoc=True):
         d_reference = pd.concat([d_items, d_labitems])
         d_reference["mID"] = d_reference["mID"].astype("str")
         # create the "vm"+ column
-        d_reference["mID_corrected"] = list(map(lambda x: "vm" + str(x), d_reference["mID"]))
-        d_reference.loc[d_reference["mID"] == "exclusion", "mID_corrected"] = "exclusion"
+        d_reference["mID_corrected"] = list(
+            map(lambda x: "vm" + str(x), d_reference["mID"])
+        )
+        d_reference.loc[d_reference["mID"] == "exclusion", "mID_corrected"] = (
+            "exclusion"
+        )
         d_reference.loc[d_reference["mID"] == "static", "mID_corrected"] = "static"
         d_reference.loc[d_reference["mID"] == "nan", "mID_corrected"] = "nan"
         d_reference.loc[
-            d_reference["varname"].isin({"Epinephrine", "Dobutamine", "Norepinephrine", "Vasopressin"}), "mID_corrected"
+            d_reference["varname"].isin(
+                {"Epinephrine", "Dobutamine", "Norepinephrine", "Vasopressin"}
+            ),
+            "mID_corrected",
         ] = list(
             map(
                 lambda x: "pm" + str(x),
                 d_reference.loc[
-                    d_reference["varname"].isin({"Epinephrine", "Dobutamine", "Norepinephrine", "Vasopressin"}), "mID"
+                    d_reference["varname"].isin(
+                        {"Epinephrine", "Dobutamine", "Norepinephrine", "Vasopressin"}
+                    ),
+                    "mID",
                 ],
             )
         )
@@ -61,7 +73,7 @@ def get_icustayid_lookup():
     using the chartevents table, grab ICUSTAY_ID, SUBJECT_ID, HADM_ID
     """
     # df = pd.read_csv(mimic_paths.source_data + "ICUSTAYS.csv")
-    df = pd.read_csv("/data/harry/mimiciii/ICUSTAYS.csv")
+    df = pd.read_csv("/data/qmia/mimiciii/ICUSTAYS.csv")
     df = df.loc[:, ["SUBJECT_ID", "ICUSTAY_ID", "HADM_ID"]]
     df.drop_duplicates(inplace=True)
     return df
@@ -98,7 +110,9 @@ def merge_ref_and_excel(d_ref=None, excel=None):
         excel = load_excel()
     # we will join on mID
     d_ref.set_index("mID", inplace=True)
-    excel_sub = excel.loc[:, ["MetaVariableID", "MetaVariableName", "LowerBound", "UpperBound"]]
+    excel_sub = excel.loc[
+        :, ["MetaVariableID", "MetaVariableName", "LowerBound", "UpperBound"]
+    ]
     excel_sub.drop_duplicates(inplace=True)
     excel_sub.rename(columns={"MetaVariableID": "mID"}, inplace=True)
     excel_sub.set_index("mID", inplace=True)
@@ -189,7 +203,14 @@ def collect_pre_merged(version=""):
             print("reading", table)
             df = pd.read_hdf(
                 mimic_paths.hdf5_dir + version + "/" + table + "_subset.h5",
-                columns=["ICUSTAY_ID", "CHARTTIME", "VALUE", "VALUENUM", "mID", "ITEMID"],
+                columns=[
+                    "ICUSTAY_ID",
+                    "CHARTTIME",
+                    "VALUE",
+                    "VALUENUM",
+                    "mID",
+                    "ITEMID",
+                ],
             )
             df_list.append(df)
         except TypeError:
@@ -272,7 +293,16 @@ def trim_unify_csvs(skiptable=[np.nan], version=""):
     convert to hdf5
     """
     d_reference = load_reference_tables()
-    columns_of_interest = ["ICUSTAY_ID", "ITEMID", "SUBJECT_ID", "CHARTTIME", "STORETIME", "VALUE", "VALUENUM", "mID"]
+    columns_of_interest = [
+        "ICUSTAY_ID",
+        "ITEMID",
+        "SUBJECT_ID",
+        "CHARTTIME",
+        "STORETIME",
+        "VALUE",
+        "VALUENUM",
+        "mID",
+    ]
     if skiptable is None:
         skiptable = []
     for table in d_reference["table"].unique():
@@ -287,7 +317,10 @@ def trim_unify_csvs(skiptable=[np.nan], version=""):
             df_sub = deal_with_procedures(version=version)
             df_sub.reset_index(inplace=True)
         else:
-            df = pd.read_csv(mimic_paths.csvs_dir + version + "/" + table + "_subset.csv", low_memory=False)
+            df = pd.read_csv(
+                mimic_paths.csvs_dir + version + "/" + table + "_subset.csv",
+                low_memory=False,
+            )
             for col in columns_of_interest:
                 if not col in df.columns:
                     print("WARNING: table", table, "is missing", col)
@@ -296,7 +329,9 @@ def trim_unify_csvs(skiptable=[np.nan], version=""):
                         assert "SUBJECT_ID" in df.columns
                         print("Joining from lookup...")
                         mapping = get_icustayid_lookup()
-                        df = pd.merge(df, mapping, how="left", on=["HADM_ID", "SUBJECT_ID"])
+                        df = pd.merge(
+                            df, mapping, how="left", on=["HADM_ID", "SUBJECT_ID"]
+                        )
                     if col == "VALUENUM":
                         assert "VALUE" in df.columns
                         print("creating VALUENUM column from VALUE in", table)
@@ -331,7 +366,9 @@ def merge_mid(mid, mdf, mdf_path):
     for pid in pids:
         pdf = mdf.loc[mdf["PatientID"] == pid, :]
         if merge_logic == "median":
-            pdf_merged = pdf.loc[:, ["Datetime", "VALUENUM"]].groupby("Datetime").median()
+            pdf_merged = (
+                pdf.loc[:, ["Datetime", "VALUENUM"]].groupby("Datetime").median()
+            )
         elif merge_logic == "binary":
             # check if any value at this timepoint is greater than 0
             # this looks strange, but it will preserve NAN values for us
@@ -342,7 +379,9 @@ def merge_mid(mid, mdf, mdf_path):
                     lambda x: (
                         1
                         if x["VALUENUM"].sum(min_count=1) > 0
-                        else 0 if x["VALUENUM"].sum(min_count=1) == 0 else np.nan
+                        else 0
+                        if x["VALUENUM"].sum(min_count=1) == 0
+                        else np.nan
                     )
                 )
             )
@@ -353,7 +392,11 @@ def merge_mid(mid, mdf, mdf_path):
             except:
                 ipdb.set_trace()
         elif merge_logic == "sum":
-            pdf_merged = pdf.loc[:, ["Datetime", "VALUENUM"]].groupby("Datetime").sum(min_count=1)
+            pdf_merged = (
+                pdf.loc[:, ["Datetime", "VALUENUM"]]
+                .groupby("Datetime")
+                .sum(min_count=1)
+            )
         else:
             raise ValueError(merge_logic)
         pdf_merged.rename(columns={"VALUENUM": mid}, inplace=True)
@@ -366,7 +409,13 @@ def merge_mid(mid, mdf, mdf_path):
     # just for good measure
     mdf_merged["Datetime"] = pd.to_datetime(mdf_merged["Datetime"])
     mdf_merged.to_hdf(
-        mdf_path, "merged", append=False, complevel=5, complib="blosc:lz4", data_columns=["PatientID"], format="table"
+        mdf_path,
+        "merged",
+        append=False,
+        complevel=5,
+        complib="blosc:lz4",
+        data_columns=["PatientID"],
+        format="table",
     )
     return mdf_merged
 
@@ -398,7 +447,13 @@ def merge_duplicates_and_pivot(df=None, version=""):
             else:
                 mdf_merged = merge_mid(mid, mdf, mdf_path)
         if not mdf_merged is None:
-            print("merging mid", mid, "(", d_ref.loc[d_ref["mID"] == mid, "varname"].values, ")")
+            print(
+                "merging mid",
+                mid,
+                "(",
+                d_ref.loc[d_ref["mID"] == mid, "varname"].values,
+                ")",
+            )
             mdf_all.append(mdf_merged)
     print("Merging...")
     df_merged = mdf_all[0]
@@ -407,7 +462,9 @@ def merge_duplicates_and_pivot(df=None, version=""):
         try:
             df["Datetime"] = pd.to_datetime(df["Datetime"])
             print(i)
-            df_merged = pd.merge(df_merged, df, how="outer", on=["PatientID", "Datetime"])
+            df_merged = pd.merge(
+                df_merged, df, how="outer", on=["PatientID", "Datetime"]
+            )
         except:
             print("ERROR!")
             ipdb.set_trace()
@@ -431,7 +488,9 @@ def convert_to_rate(df, version):
         pdf.sort_index(inplace=True)
         try:
             total_dose_before = pdf["VALUENUM"].sum()
-            entry_time = pd.to_datetime(static.loc[static["PatientID"] == pid, "ADMITTIME"].iloc[0])
+            entry_time = pd.to_datetime(
+                static.loc[static["PatientID"] == pid, "ADMITTIME"].iloc[0]
+            )
             hours_elapsed = np.concatenate(
                 [
                     [(pdf.index[0] - entry_time) / np.timedelta64(1, "h")],
@@ -455,7 +514,9 @@ def convert_to_rate(df, version):
         df_out["VALUENUM"] = df_out["RATE"].copy()
         del df_out["RATE"]
         assert df_out.shape[0] == df.shape[0]
-        assert df.loc[:, ["PatientID", "Datetime"]].equals(df_out.loc[:, ["PatientID", "Datetime"]])
+        assert df.loc[:, ["PatientID", "Datetime"]].equals(
+            df_out.loc[:, ["PatientID", "Datetime"]]
+        )
     #        assert not df['VALUE'].equals(df_out['VALUE'])
     except AssertionError:
         ipdb.set_trace()
@@ -484,23 +545,35 @@ def deal_with_special_cases(df, version):
         )
     df["VALUENUM"] = values
     # urine --> convert to rate
-    df.loc[df["ITEMID"] == 227489, "VALUENUM"] = convert_to_rate(df.loc[df["ITEMID"] == 227489, :], version)
+    df.loc[df["ITEMID"] == 227489, "VALUENUM"] = convert_to_rate(
+        df.loc[df["ITEMID"] == 227489, :], version
+    )
     # temperature (F --> C)
-    df.loc[df["ITEMID"] == 223761, "VALUENUM"] = (df.loc[df["ITEMID"] == 223761, "VALUENUM"] - 32) * (5.0 / 9.0)
+    df.loc[df["ITEMID"] == 223761, "VALUENUM"] = (
+        df.loc[df["ITEMID"] == 223761, "VALUENUM"] - 32
+    ) * (5.0 / 9.0)
     # WEIGHT - convert lbs to kg
-    df.loc[df["ITEMID"] == 226531, "VALUENUM"] = 0.453592 * df.loc[df["ITEMID"] == 226531, "VALUENUM"]
+    df.loc[df["ITEMID"] == 226531, "VALUENUM"] = (
+        0.453592 * df.loc[df["ITEMID"] == 226531, "VALUENUM"]
+    )
     # glucose - convert from mg/dl to mmol/l
     glucose_vars = [225664, 220621, 226537, 50809, 50931]
     for gv in glucose_vars:
-        df.loc[df["ITEMID"] == gv, "VALUENUM"] = (1.0 / 18) * df.loc[df["ITEMID"] == gv, "VALUENUM"]
+        df.loc[df["ITEMID"] == gv, "VALUENUM"] = (1.0 / 18) * df.loc[
+            df["ITEMID"] == gv, "VALUENUM"
+        ]
     # Hb - convert from mg/dl to mg/L
     hb_vars = [50811, 51222, 220228]
     for hv in hb_vars:
-        df.loc[df["ITEMID"] == hv, "VALUENUM"] = 10 * df.loc[df["ITEMID"] == hv, "VALUENUM"]
+        df.loc[df["ITEMID"] == hv, "VALUENUM"] = (
+            10 * df.loc[df["ITEMID"] == hv, "VALUENUM"]
+        )
     # creatinine
     creat_vars = [50912, 220615]
     for cv in creat_vars:
-        df.loc[df["ITEMID"] == cv, "VALUENUM"] = 88.42 * df.loc[df["ITEMID"] == cv, "VALUENUM"]
+        df.loc[df["ITEMID"] == cv, "VALUENUM"] = (
+            88.42 * df.loc[df["ITEMID"] == cv, "VALUENUM"]
+        )
     return df
 
 
@@ -580,9 +653,13 @@ def remove_impossible_values(version="180817", step="merged"):
             if np.isnan(lower) and np.isnan(upper):
                 assert df_clean[mid].equals(df[mid])
             if np.isfinite(lower):
-                assert (df_clean[mid].min() >= lower) or (df_clean[mid].isnull().mean() == 1)
+                assert (df_clean[mid].min() >= lower) or (
+                    df_clean[mid].isnull().mean() == 1
+                )
             if np.isfinite(upper):
-                assert (df_clean[mid].max() <= upper) or (df_clean[mid].isnull().mean() == 1)
+                assert (df_clean[mid].max() <= upper) or (
+                    df_clean[mid].isnull().mean() == 1
+                )
         except AssertionError:
             ipdb.set_trace()
     df_clean.to_hdf(
@@ -607,7 +684,8 @@ def find_overlapping_drugs(df):
         df_sub = df.loc[df["ITEMID"] == drugid, :]
         ipdb.set_trace()
         violations = df_sub.groupby("ICUSTAY_ID").apply(
-            lambda x: (x["ENDTIME"].max() - x["STARTTIME"].min()) >= (x["ENDTIME"] - x["STARTTIME"]).sum()
+            lambda x: (x["ENDTIME"].max() - x["STARTTIME"].min())
+            >= (x["ENDTIME"] - x["STARTTIME"]).sum()
         )
         if sum(violations) > 0:
             ipdb.set_trace()
@@ -641,7 +719,12 @@ def deal_with_drugs(version):
         pdf = df.loc[df["ICUSTAY_ID"] == icustayid, :]
         mid_list = []
         for mid in pdf["mID"].unique():
-            inst_rate = pdf.loc[pdf["mID"] == mid, ["CHARTTIME", "RATE"]].groupby("CHARTTIME").sum().cumsum()
+            inst_rate = (
+                pdf.loc[pdf["mID"] == mid, ["CHARTTIME", "RATE"]]
+                .groupby("CHARTTIME")
+                .sum()
+                .cumsum()
+            )
             inst_rate["ICUSTAY_ID"] = icustayid
             inst_rate["SUBJECT_ID"] = pdf["SUBJECT_ID"].iloc[0]
             inst_rate["HADM_ID"] = pdf["HADM_ID"].iloc[0]
@@ -687,7 +770,12 @@ def deal_with_procedures(version):
         pdf = df.loc[df["ICUSTAY_ID"] == icustayid, :]
         mid_list = []
         for mid in pdf["mID"].unique():
-            inst_value = pdf.loc[pdf["mID"] == mid, ["CHARTTIME", "VALUENUM"]].groupby("CHARTTIME").sum().cumsum()
+            inst_value = (
+                pdf.loc[pdf["mID"] == mid, ["CHARTTIME", "VALUENUM"]]
+                .groupby("CHARTTIME")
+                .sum()
+                .cumsum()
+            )
             inst_value["ICUSTAY_ID"] = icustayid
             inst_value["SUBJECT_ID"] = pdf["SUBJECT_ID"].iloc[0]
             inst_value["HADM_ID"] = pdf["HADM_ID"].iloc[0]
@@ -718,22 +806,33 @@ def build_static_table(version=""):
     patients_table.set_index("SUBJECT_ID", inplace=True)
     # keep just the first service the patient was admitted under (there can be transfers...)
     services_table = services_table.loc[
-        services_table.sort_values("TRANSFERTIME")["HADM_ID"].drop_duplicates(keep="first").index, :
+        services_table.sort_values("TRANSFERTIME")["HADM_ID"]
+        .drop_duplicates(keep="first")
+        .index,
+        :,
     ]
     services_table.set_index("HADM_ID", inplace=True)
 
     # prep
-    table = admissions_table.join(patients_table, on=["SUBJECT_ID"], rsuffix="r", how="left")
-    table = table.join(services_table.loc[:, ["CURR_SERVICE"]], on=["HADM_ID"], rsuffix="r", how="left")
+    table = admissions_table.join(
+        patients_table, on=["SUBJECT_ID"], rsuffix="r", how="left"
+    )
+    table = table.join(
+        services_table.loc[:, ["CURR_SERVICE"]], on=["HADM_ID"], rsuffix="r", how="left"
+    )
     # age
     table = table[pd.to_datetime(table["DOB"]) > pd.Timestamp("1950-01-01")]
-    table["Age"] = (pd.to_datetime(table["ADMITTIME"]) - pd.to_datetime(table["DOB"])) / np.timedelta64(24 * 365, "h")
+    table["Age"] = (
+        pd.to_datetime(table["ADMITTIME"]) - pd.to_datetime(table["DOB"])
+    ) / np.timedelta64(24 * 365, "h")
     # sex
     table.rename(columns={"GENDER": "Sex"}, inplace=True)
     # emergency status
     table["Emergency"] = (table["ADMISSION_TYPE"] == "EMERGENCY").astype("int")
     # surgical status
-    table["Surgical"] = table["CURR_SERVICE"].str.contains("SURG").astype(bool, errors="ignore")
+    table["Surgical"] = (
+        table["CURR_SERVICE"].str.contains("SURG").astype(bool, errors="ignore")
+    )
 
     # height - just a static variable, but it's found in the chartevents table
     # NOTE: for the purpose of height, we just use this oldish version of chartevents . . .
@@ -742,14 +841,18 @@ def build_static_table(version=""):
     #     mimic_paths.hdf5_dir + "/181002/chartevents_subset.h5",
     #     columns=["SUBJECT_ID", "CHARTTIME", "VALUE", "mID", "ITEMID"],
     # )
-    chartevents = pd.read_csv("/data/harry/mimiciii/CHARTEVENTS_height_subset.csv")
-    height = chartevents.loc[chartevents["ITEMID"] == height_ID, ["SUBJECT_ID", "VALUE", "CHARTTIME"]]
+    chartevents = pd.read_csv("/data/qmia/mimiciii/CHARTEVENTS_height_subset.csv")
+    height = chartevents.loc[
+        chartevents["ITEMID"] == height_ID, ["SUBJECT_ID", "VALUE", "CHARTTIME"]
+    ]
     # sort by record time
     height.sort_values(by=["SUBJECT_ID", "CHARTTIME"], inplace=True)
     height.drop("CHARTTIME", axis=1, inplace=True)
     # just keep the first height measurement
     height["VALUE"] = pd.to_numeric(height["VALUE"])
-    height = height.loc[height.drop("VALUE", axis=1).drop_duplicates(keep="first").index, :]
+    height = height.loc[
+        height.drop("VALUE", axis=1).drop_duplicates(keep="first").index, :
+    ]
     height.set_index("SUBJECT_ID", inplace=True)
     height.rename(columns={"VALUE": "Height"}, inplace=True)
     table = table.join(height, on=["SUBJECT_ID"], rsuffix="r", how="outer")
@@ -757,7 +860,9 @@ def build_static_table(version=""):
     # now merge the icustay
     icustay_lookup = get_icustayid_lookup()
     icustay_lookup.set_index("ICUSTAY_ID", inplace=True)
-    table = icustay_lookup.loc[:, ["HADM_ID"]].join(table.set_index("HADM_ID"), on=["HADM_ID"], rsuffix="r", how="left")
+    table = icustay_lookup.loc[:, ["HADM_ID"]].join(
+        table.set_index("HADM_ID"), on=["HADM_ID"], rsuffix="r", how="left"
+    )
 
     # we can keep the other columns for the craic
     static = table.copy()
@@ -789,19 +894,25 @@ def load_exclusion_list(version=""):
     exclusion_list_path = mimic_paths.validation_dir + "exclusion_list"
     # --- based on age
     try:
-        exclusion_list_age = pd.read_csv(exclusion_list_path + "_age.csv")["SUBJECT_ID"].values
+        exclusion_list_age = pd.read_csv(exclusion_list_path + "_age.csv")[
+            "SUBJECT_ID"
+        ].values
     except FileNotFoundError:
         exclusion_list_age = build_exclusion_list_based_on_age(version)
         exclusion_ser = pd.Series(exclusion_list_age, name="SUBJECT_ID")
         exclusion_ser.to_csv(exclusion_list_path + "_age.csv", index=False, header=True)
     # --- based on variables
     try:
-        exclusion_list_variables = pd.read_csv(exclusion_list_path + "_variables.csv")["SUBJECT_ID"].values
+        exclusion_list_variables = pd.read_csv(exclusion_list_path + "_variables.csv")[
+            "SUBJECT_ID"
+        ].values
     except FileNotFoundError:
         # build it
         exclusion_list_variables = build_exclusion_list_based_on_variables()
         exclusion_ser = pd.Series(exclusion_list_variables, name="SUBJECT_ID")
-        exclusion_ser.to_csv(exclusion_list_path + "_variables.csv", index=False, header=True)
+        exclusion_ser.to_csv(
+            exclusion_list_path + "_variables.csv", index=False, header=True
+        )
     exclusion_list = np.concatenate([exclusion_list_age, exclusion_list_variables])
     exclusion_list = set(exclusion_list)
     return exclusion_list
@@ -812,7 +923,10 @@ def build_exclusion_list_based_on_age(version):
     find patients with excessive age
     """
     static_info = pd.read_hdf(mimic_paths.merged_dir + version + "/" + "static.h5")
-    bad_stays = static_info.loc[(static_info["Age"] < 16) | (static_info["Age"] > 100), ["HADM_ID", "SUBJECT_ID"]]
+    bad_stays = static_info.loc[
+        (static_info["Age"] < 16) | (static_info["Age"] > 100),
+        ["HADM_ID", "SUBJECT_ID"],
+    ]
     # for now we just exclude based on subject_id
     exclusion_list = bad_stays["SUBJECT_ID"].unique()
     return exclusion_list

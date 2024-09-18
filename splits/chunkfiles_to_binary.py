@@ -1,7 +1,7 @@
-'''
-Generates a new PID list from the batch patient map and also saves binary 
+"""
+Generates a new PID list from the batch patient map and also saves binary
 versions of the PID and batch maps.
-'''
+"""
 
 import argparse
 import csv
@@ -24,8 +24,8 @@ def chunkfiles_to_binary(configs):
         print("ERROR: Invalid data-set specified")
         sys.exit(1)
 
-    with open(input_file, 'r') as fp:
-        csv_fp = csv.reader(fp, delimiter=',')
+    with open(input_file, "r") as fp:
+        csv_fp = csv.reader(fp, delimiter=",")
         next(csv_fp)
         for pid, chunk_idx in csv_fp:
             chunk_key = int(chunk_idx.strip())
@@ -40,7 +40,7 @@ def chunkfiles_to_binary(configs):
 
     pickle_obj = {"chunk_to_pids": fw_dict, "pid_to_chunk": rw_dict}
 
-    with open(output_file, 'wb') as fp:
+    with open(output_file, "wb") as fp:
         pickle.dump(pickle_obj, fp)
 
 
@@ -48,26 +48,41 @@ def parse_cmd_args():
     parser = argparse.ArgumentParser()
 
     # Input paths
-    parser.add_argument("--bern_chunk_file_input", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.csv", 
-                        help="Chunk file text version input for the Bern database")
-    parser.add_argument("--mimic_chunk_file_input", default="/data/harry/mimiciii/validation/external_validation/chunks.csv.181023",
-                        help="Chunk file text version input for the MIMIC database")
+    parser.add_argument(
+        "--bern_chunk_file_input",
+        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.csv",
+        help="Chunk file text version input for the Bern database",
+    )
+    parser.add_argument(
+        "--mimic_chunk_file_input",
+        default="/data/qmia/mimiciii/validation/external_validation/chunks.csv.181023",
+        help="Chunk file text version input for the MIMIC database",
+    )
 
     # Output paths
-    parser.add_argument("--bern_chunk_file_output", default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle",
-                        help="Chunk file pickle version output for the Bern database")
-    parser.add_argument("--mimic_chunk_file_output", default="/data/harry/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle",
-                        help="Chunk file pickle version output for the MIMIC database")
+    parser.add_argument(
+        "--bern_chunk_file_output",
+        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle",
+        help="Chunk file pickle version output for the Bern database",
+    )
+    parser.add_argument(
+        "--mimic_chunk_file_output",
+        default="/data/qmia/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle",
+        help="Chunk file pickle version output for the MIMIC database",
+    )
 
     # Arguments
-    parser.add_argument("--dataset", default="bern", help="For which data-set should we construct in this run?")
+    parser.add_argument(
+        "--dataset",
+        default="bern",
+        help="For which data-set should we construct in this run?",
+    )
 
     args = parser.parse_args()
     configs = vars(args)
     return configs
 
 
-
 if __name__ == "__main__":
-    configs=parse_cmd_args()
+    configs = parse_cmd_args()
     chunkfiles_to_binary(configs)
