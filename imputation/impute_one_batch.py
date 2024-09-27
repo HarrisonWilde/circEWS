@@ -1,32 +1,37 @@
 """Imputation of a single batch of patients"""
 
 import argparse
-import concurrent.futures as conc_futures
-import csv
-import datetime
+
+# import concurrent.futures as conc_futures
+# import csv
+# import datetime
 import gc
 import glob
-import multiprocessing as mp
+
+# import multiprocessing as mp
 import os
 import os.path
-import pickle
-import random
-import sys
-import time
-import timeit
 
+# import pickle
+# import random
+import sys
+
+# import time
+# import timeit
 import matplotlib
 import numpy as np
 import pandas as pd
-import psutil
-import scipy as sp
+
+# import psutil
+# import scipy as sp
 
 matplotlib.use("pdf")
 import circews.classes.imputer as bern_tf_impute
 import circews.classes.imputer_ffill as bern_tf_impute_ffill
 import circews.classes.imputer_none as bern_tf_impute_none
 import circews.functions.util.io as mlhc_io
-import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 
 
 def is_df_sorted(df, colname):
@@ -37,7 +42,7 @@ def impute_one_batch(configs):
     """Batch wrapper that loops through the patients of one the 50 batches"""
     batch_idx = configs["batch_idx"]
     split_key = configs["split_key"]
-    data_split = mlhc_io.load_pickle(configs["temporal_data_split_binary"])[split_key]
+    data_split = mlhc_io.load_pickle(configs["data_split_binary"])[split_key]
 
     if configs["dataset"] == "bern":
         all_pids = data_split["train"] + data_split["val"] + data_split["test"]
@@ -220,65 +225,20 @@ def parse_cmd_args():
     parser = argparse.ArgumentParser()
 
     # Input paths
-    BERN_STATIC_INFO_PATH = "/data/qmia/mimiciii/validation/1a_hdf5_clean/v6b/static.h5"
-    MIMIC_STATIC_INFO_PATH = (
-        "/data/qmia/mimiciii/validation/external_validation/merged/181023/static.h5"
+    TYPICAL_WEIGHT_DICT_PATH = os.path.abspath(
+        "./circulatory_status/resources/typical_weight_dict.npy"
     )
-    TYPICAL_WEIGHT_DICT_PATH = (
-        "/data/qmia/mimiciii/validation/misc_derived/qmia/typical_weight_dict.npy"
+    MEDIAN_BMI_DICT_PATH = os.path.abspath(
+        "./circulatory_status/resources/median_bmi_dict.npy"
     )
-    MEDIAN_BMI_DICT_PATH = (
-        "/data/qmia/mimiciii/validation/misc_derived/qmia/median_bmi_dict.npy"
+    META_VARENCODING_MAP_PATH = os.path.abspath(
+        "./external_validation/resource/meta_varencoding_map_v6.pickle"
     )
-    META_VARENCODING_MAP_PATH = "/data/qmia/mimiciii/validation/misc_derived/mhueser/meta_varencoding_map_v6.pickle"
-    VARENCODING_MAP_PATH = (
-        "/data/qmia/mimiciii/validation/misc_derived/mhueser/varencoding_map_v6.pickle"
-    )
-    IMPUTATION_PARAM_DICT_REDUCED = (
-        "/data/qmia/mimiciii/validation/misc_derived/mhueser/imputation_reduced_v6b"
-    )
-    IMPUTATION_PARAM_DICT = (
-        "/data/qmia/mimiciii/validation/misc_derived/mhueser/imputation_v6b"
-    )
-    META_NORMALVAL_MAP_PATH = "/data/qmia/mimiciii/validation/misc_derived/mhueser/meta_normalval_map_v6.pickle"
-    NORMALVAL_MAP_PATH = (
-        "/data/qmia/mimiciii/validation/misc_derived/mhueser/normalval_map_v6.pickle"
-    )
-    BERN_REDUCED_MERGED_PATH = "/data/qmia/mimiciii/validation/3_merged/v6b_top18_upsampled_downsampled_rev2_new/reduced"
-    BERN_MERGED_PATH = "/data/qmia/mimiciii/validation/3_merged/v6b_top18_upsampled_downsampled_rev2_new"
-    MIMIC_REDUCED_MERGED_PATH = (
-        "/data/qmia/mimiciii/validation/external_validation/merged/181023/reduced"
-    )
-    MIMIC_MERGED_PATH = (
-        "/data/qmia/mimiciii/validation/external_validation/merged/181023"
-    )
-    TEMPORAL_DATA_SPLIT_BINARY = (
-        "/data/qmia/mimiciii/validation/misc_derived/temporal_split_180918.pickle"
-    )
-    BERN_PID_BATCH_MAP_BINARY = "/data/qmia/mimiciii/validation/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle"
-    MIMIC_PID_BATCH_MAP_BINARY = "/data/qmia/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle"
-    MIMIC_ALL_PID_LIST_PATH = "/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.181103"
 
     # Output paths
-    BERN_IMPUTED_REDUCED_DIR = "/data/qmia/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute/reduced"
-    BERN_IMPUTED_DIR = "/data/qmia/mimiciii/validation/5_imputed/imputed_v6b_downsample_upsample_no_impute"
-    MIMIC_IMPUTED_REDUCED_DIR = "/data/qmia/mimiciii/validation/external_validation/imputed/imputed_181023/reduced"
-    MIMIC_IMPUTED_DIR = (
-        "/data/qmia/mimiciii/validation/external_validation/imputed/imputed_181023"
-    )
-    LOG_DIR = "/data/qmia/mimiciii/validation/misc_derived/mhueser/log"
+    LOG_DIR = "/data/qmia/mimiciii/validation/misc_derived/log"
 
     # Input paths
-    parser.add_argument(
-        "--bern_static_info_path",
-        default=BERN_STATIC_INFO_PATH,
-        help="Path of static info to be loaded for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_static_info_path",
-        default=MIMIC_STATIC_INFO_PATH,
-        help="Path of the static info to be loaded for the MIMIC data-set",
-    )
     parser.add_argument(
         "--typical_weight_dict_path",
         default=TYPICAL_WEIGHT_DICT_PATH,
@@ -293,93 +253,6 @@ def parse_cmd_args():
         "--meta_varencoding_map_path",
         default=META_VARENCODING_MAP_PATH,
         help="Dictionary mapping variable IDs to variable encoding to distinguish between processing categories",
-    )
-    parser.add_argument(
-        "--varencoding_map_path",
-        default=VARENCODING_MAP_PATH,
-        help="Dictionary mapping variableIDs to variable types/encoding",
-    )
-    parser.add_argument(
-        "--imputation_param_dict_reduced",
-        default=IMPUTATION_PARAM_DICT_REDUCED,
-        help="Directory where imputation parameters are stored, for the reduced data version",
-    )
-    parser.add_argument(
-        "--imputation_param_dict",
-        default=IMPUTATION_PARAM_DICT,
-        help="Directory where imputation parameters are stored, for the standard data version",
-    )
-    parser.add_argument(
-        "--meta_normalval_map_path",
-        default=META_NORMALVAL_MAP_PATH,
-        help="Dictionary mapping meta-variable IDs to normal values",
-    )
-    parser.add_argument(
-        "--normalval_map_path",
-        default=NORMALVAL_MAP_PATH,
-        help="Dictionary mapping variableIDs to normal values",
-    )
-    parser.add_argument(
-        "--bern_reduced_merged_path",
-        default=BERN_REDUCED_MERGED_PATH,
-        help="Current version of dimensionality-reduced data for the Bern data-set",
-    )
-    parser.add_argument(
-        "--bern_merged_path",
-        default=BERN_MERGED_PATH,
-        help="Current version of the merged data for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_reduced_merged_path",
-        default=MIMIC_REDUCED_MERGED_PATH,
-        help="Current version of the dim-reduced data for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--mimic_merged_path",
-        default=MIMIC_MERGED_PATH,
-        help="Current version of the un-reduced data for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--temporal_data_split_binary",
-        default=TEMPORAL_DATA_SPLIT_BINARY,
-        help="Location of the temporal split descriptor",
-    )
-    parser.add_argument(
-        "--bern_pid_batch_map_binary",
-        default=BERN_PID_BATCH_MAP_BINARY,
-        help="Location of the PID-batch map for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_pid_batch_map_binary",
-        default=MIMIC_PID_BATCH_MAP_BINARY,
-        help="Location of the PID-batch map for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--mimic_all_pid_list_path",
-        default=MIMIC_ALL_PID_LIST_PATH,
-        help="Location of the all PID list of the MIMIC data set that should be considered",
-    )
-
-    # Output paths
-    parser.add_argument(
-        "--bern_imputed_reduced_dir",
-        default=BERN_IMPUTED_REDUCED_DIR,
-        help="Where to store the imputed data for reduced mode for the Bern data-set",
-    )
-    parser.add_argument(
-        "--bern_imputed_dir",
-        default=BERN_IMPUTED_DIR,
-        help="Where to store the imputed data for non-reduced mode for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_imputed_reduced_dir",
-        default=MIMIC_IMPUTED_REDUCED_DIR,
-        help="Where to store the imputed data for reduced mode for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--mimic_imputed_dir",
-        default=MIMIC_IMPUTED_DIR,
-        help="Where to store the imputed data for non-reduced mode for the MIMIC data-set",
     )
     parser.add_argument(
         "--log_dir", default=LOG_DIR, help="Location of the log directory"
@@ -397,7 +270,7 @@ def parse_cmd_args():
     )
     parser.add_argument(
         "--split_key",
-        default="temporal_5",
+        default="random_5",
         help="On which split should imputation be run?",
     )
     parser.add_argument(
@@ -437,9 +310,42 @@ def parse_cmd_args():
         default="complex",
         help="Which imputation schema should be used?",
     )
+    parser.add_argument("--version", required=True, help="Version to run")
 
-    args = parser.parse_args()
-    configs = vars(args)
+    configs = vars(parser.parse_args())
+
+    configs["mimic_static_info_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/merged/{configs['version']}/static.h5"
+    )
+    configs["imputation_param_dict_reduced"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/imputation_reduced_{configs['version']}"
+    )
+    configs["imputation_param_dict"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/imputation_{configs['version']}"
+    )
+    configs["meta_normalval_map_path"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/meta_normalval_map_{configs['version']}.pickle"
+    )
+    configs["normalval_map_path"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/normalval_map_{configs['version']}.pickle"
+    )
+    configs["mimic_merged_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/merged/{configs['version']}"
+    )
+    configs["mimic_reduced_merged_path"] = f"{configs['mimic_merged_path']}/reduced"
+    configs["data_split_binary"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/split_{configs['version']}.pickle"
+    )
+    configs["mimic_pid_batch_map_binary"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_{configs['version']}.pickle"
+    )
+    configs["mimic_all_pid_list_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.{configs['version']}"
+    )
+    configs["mimic_imputed_dir"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/imputed/imputed_{configs['version']}"
+    )
+    configs["mimic_imputed_reduced_dir"] = f"{configs['mimic_imputed_dir']}/reduced"
 
     assert configs["run_mode"] in ["CLUSTER", "INTERACTIVE"]
     assert configs["data_mode"] in ["reduced", "non_reduced"]

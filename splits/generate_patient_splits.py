@@ -344,7 +344,9 @@ def parse_cmd_args():
     args = parser.parse_args()
     configs = vars(args)
     MIMIC_ALL_PID_LIST_PATH = f"/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.{configs["version"]}"
-    MIMIC_DATA_SPLIT_BINARY = f"/data/qmia/mimiciii/validation/misc_derived/temporal_split_{configs["version"]}.pickle"
+    MIMIC_DATA_SPLIT_BINARY = (
+        f"/data/qmia/mimiciii/validation/misc_derived/split_{configs["version"]}.pickle"
+    )
     configs["mimic_all_pid_list_path"] = MIMIC_ALL_PID_LIST_PATH
     configs["mimic_data_split_binary_path"] = MIMIC_DATA_SPLIT_BINARY
     return configs
