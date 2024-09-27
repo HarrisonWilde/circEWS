@@ -81,7 +81,7 @@ def generate_patient_splits(configs):
             local_dict["train"] = train_pids
             local_dict["val"] = val_pids
             local_dict["test"] = test_pids
-            out_dict["temporal_{}".format(sidx + 1)] = local_dict
+            out_dict["random_{}".format(sidx + 1)] = local_dict
 
         if not configs["debug_mode"]:
             mlhc_io.save_pickle(out_dict, configs["mimic_data_split_binary_path"])
@@ -252,58 +252,55 @@ def generate_patient_splits(configs):
 
 def parse_cmd_args():
     # Input paths
-    BERN_PID_INCLUDED_BASE_LIST_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_filtered.csv"
-    BERN_ENDPOINT_LIST_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/pipeline_diagnostics/patients_with_endpoints_v6b.txt"
-    BERN_GENERAL_DATA_TABLE_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/1_hdf5_consent/180704/generaldata.h5"
-    MIMIC_ALL_PID_LIST_PATH = "/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.181023"
+    # BERN_PID_INCLUDED_BASE_LIST_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_filtered.csv"
+    # BERN_ENDPOINT_LIST_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/pipeline_diagnostics/patients_with_endpoints_v6b.txt"
+    # BERN_GENERAL_DATA_TABLE_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/1_hdf5_consent/180704/generaldata.h5"
 
     # Output paths
-    BERN_TEMPORAL_DATA_SPLIT_TEXT = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.tsv"
-    BERN_TEMPORAL_DATA_SPLIT_BINARY = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.pickle"
-    MIMIC_DATA_SPLIT_BINARY = (
-        "/data/qmia/mimiciii/validation/misc_derived/temporal_split_180918.pickle"
-    )
+    # BERN_TEMPORAL_DATA_SPLIT_TEXT = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.tsv"
+    # BERN_TEMPORAL_DATA_SPLIT_BINARY = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/aux_exploration_split_190105.pickle"
 
     parser = argparse.ArgumentParser()
 
     # Paths
+    # parser.add_argument(
+    #     "--bern_pid_included_base_list_path",
+    #     default=BERN_PID_INCLUDED_BASE_LIST_PATH,
+    #     help="Base list of included PIDs from which we subtract for the Bern data-set",
+    # )
+    # parser.add_argument(
+    #     "--bern_endpoint_list_path",
+    #     default=BERN_ENDPOINT_LIST_PATH,
+    #     help="PIDs that have endpoints and should be included",
+    # )
+    # parser.add_argument(
+    #     "--bern_general_data_table_path",
+    #     default=BERN_GENERAL_DATA_TABLE_PATH,
+    #     help="General data table from the original DBMS",
+    # )
+    # parser.add_argument(
+    #     "--bern_temporal_data_split_text_path",
+    #     default=BERN_TEMPORAL_DATA_SPLIT_TEXT,
+    #     help="Temporal data split descriptor (text format) for the Bern data-set",
+    # )
+    # parser.add_argument(
+    #     "--bern_temporal_data_split_binary_path",
+    #     default=BERN_TEMPORAL_DATA_SPLIT_BINARY,
+    #     help="Temporal data split descriptor (binary format) for the Bern data-set",
+    # )
     parser.add_argument(
-        "--bern_pid_included_base_list_path",
-        default=BERN_PID_INCLUDED_BASE_LIST_PATH,
-        help="Base list of included PIDs from which we subtract for the Bern data-set",
+        "--version", type=str, required=True, help="Version to run with"
     )
-    parser.add_argument(
-        "--bern_endpoint_list_path",
-        default=BERN_ENDPOINT_LIST_PATH,
-        help="PIDs that have endpoints and should be included",
-    )
-    parser.add_argument(
-        "--bern_general_data_table_path",
-        default=BERN_GENERAL_DATA_TABLE_PATH,
-        help="General data table from the original DBMS",
-    )
-    parser.add_argument(
-        "--bern_temporal_data_split_text_path",
-        default=BERN_TEMPORAL_DATA_SPLIT_TEXT,
-        help="Temporal data split descriptor (text format) for the Bern data-set",
-    )
-    parser.add_argument(
-        "--bern_temporal_data_split_binary_path",
-        default=BERN_TEMPORAL_DATA_SPLIT_BINARY,
-        help="Temporal data split descriptor (binary format) for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_data_split_binary_path",
-        default=MIMIC_DATA_SPLIT_BINARY,
-        help="Temporal data split descriptor (binary format) for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--mimic_all_pid_list_path",
-        default=MIMIC_ALL_PID_LIST_PATH,
-        help="Path for the PIDs of interest in the MIMIC data-set",
-    )
-
-    # Arguments
+    # parser.add_argument(
+    #     "--mimic_data_split_binary_path",
+    #     default=MIMIC_DATA_SPLIT_BINARY,
+    #     help="Temporal data split descriptor (binary format) for the MIMIC data-set",
+    # )
+    # parser.add_argument(
+    #     "--mimic_all_pid_list_path",
+    #     default=MIMIC_ALL_PID_LIST_PATH,
+    #     help="Path for the PIDs of interest in the MIMIC data-set",
+    # )
     parser.add_argument(
         "--debug_mode",
         default=False,
@@ -346,6 +343,10 @@ def parse_cmd_args():
 
     args = parser.parse_args()
     configs = vars(args)
+    MIMIC_ALL_PID_LIST_PATH = f"/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.{configs["version"]}"
+    MIMIC_DATA_SPLIT_BINARY = f"/data/qmia/mimiciii/validation/misc_derived/temporal_split_{configs["version"]}.pickle"
+    configs["mimic_all_pid_list_path"] = MIMIC_ALL_PID_LIST_PATH
+    configs["mimic_data_split_binary_path"] = MIMIC_DATA_SPLIT_BINARY
     return configs
 
 

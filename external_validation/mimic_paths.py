@@ -20,7 +20,7 @@ csv_folder = derived + "derived_csvs/"
 
 # --- all about our data on leomed --- #
 validation_dir = root_dir + "external_validation/"
-misc_dir = root_dir + "misc_derived/qmia/"
+misc_dir = root_dir + "misc_derived/"
 vis_dir = validation_dir + "vis/"
 
 D_ITEMS_path = validation_dir + "ref_lists/D_ITEMS.csv"

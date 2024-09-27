@@ -1,10 +1,17 @@
 #!/usr/bin/env ipython
 # author: stephanie hyland
 # this is the wrapper for running the mimic preprocessing
-
-version = "181023"
+import argparse
 
 import extract_data_from_mimic as em
+
+parser = argparse.ArgumentParser(description="Run MIMIC preprocessing.")
+parser.add_argument(
+    "--version", type=str, default="181023", help="Version of the preprocessing to run"
+)
+args = parser.parse_args()
+
+version = args.version
 
 # build static
 em.build_static_table(version=version)

@@ -2,29 +2,44 @@
 # author: stephanie hyland
 # operating on data from 3_merged, draw in endpoint-relevant variables and construct 5-min grid for all patients
 
+import argparse
 import glob
+import os
 import sys
 
-import ipdb
+# import ipdb
 import numpy as np
 import pandas as pd
 from find_endpoints import find_endpoints
 from interpolate_lactate import interpolate_patient_lactate
 
-idx = int(sys.argv[1])
-reduced = sys.argv[2] == "reduced"
-if len(sys.argv) < 4:
-    mimic = False
-else:
-    mimic = sys.argv[3] == "mimic"
-    print("mimic:", mimic)
+parser = argparse.ArgumentParser(description="Run `circulatory_status` stage.")
+parser.add_argument(
+    "--idx", type=int, required=True, help="Index of the chunk to process"
+)
+parser.add_argument(
+    "--reduced", action="store_true", help="Whether to use reduced data"
+)
+parser.add_argument("--mimic", action="store_true", help="Whether to use MIMIC data")
+parser.add_argument(
+    "--version", type=str, required=True, help="Version of the preprocessing to input"
+)
+parser.add_argument(
+    "--out_version", type=str, help="Version of the preprocessing to output"
+)
+args = parser.parse_args()
+
+idx = args.idx
+mimic = args.mimic
+reduced = args.reduced or mimic
+in_version = args.version
+out_version = args.out_version if args.out_version else in_version
+
 if mimic:
     sys.path.append("../external_validation/")
     sys.path.append("./external_validation/")
     import mimic_paths as paths
 
-    # mimic is only reduced
-    assert reduced
     grid_size_in_minutes = 60
     window_size_in_minutes = 60
 else:
@@ -36,28 +51,12 @@ else:
 print("Grid size:", grid_size_in_minutes)
 print("Window size:", window_size_in_minutes)
 
-# in_version = '180214'
-# in_version = '180619'
-# in_version = '180817'
-if mimic:
-    # in_version = '180822'
-    # in_version = '180926'
-    # in_version = '181003'
-    in_version = "181023"
-    out_version = "181103"
-else:
-    in_version = "v1"
-    out_version = in_version
-# in_version = '180704'
-# out_version = '180426'
-# out_version = '180503'
-# out_version = '180822'
-
 # build paths
 
 in_dir = paths.merged_dir + in_version + "/" + reduced * "reduced/"
 out_dir = paths.endpoints_dir + out_version + "/" + reduced * "reduced/"
 # observ_dir = paths.pivoted_dir + in_version + '/observrec/'
+os.makedirs(out_dir, exist_ok=True)
 
 bad_patients = open(out_dir + "bad_patients.csv", "a")
 
@@ -95,7 +94,9 @@ else:
 
 if mimic:
     # mimic is missing some variables
-    print("WARNING: WE ASSUME THERE IS NO VENOUS LACTATE IN MIMIC DATA, CORRECT IF CHANGED")
+    print(
+        "WARNING: WE ASSUME THERE IS NO VENOUS LACTATE IN MIMIC DATA, CORRECT IF CHANGED"
+    )
     lactate_IDs = ["vm136"]
     dopamine_ID = "m_pm_2"
     phenylephrin_ID = "m_pm_1"
@@ -127,16 +128,58 @@ def process_chunk(idx, reduced=False):
     idx_stop = max(pids["PatientID"])
     if reduced:
         print("Operating on reduced data!")
-        chunkfile = in_dir + "reduced_fmat_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
-        outfile = out_dir + "reduced_endpoints_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
+        chunkfile = (
+            in_dir
+            + "reduced_fmat_"
+            + str(idx)
+            + "_"
+            + str(idx_start)
+            + "--"
+            + str(idx_stop)
+            + ".h5"
+        )
+        outfile = (
+            out_dir
+            + "reduced_endpoints_"
+            + str(idx)
+            + "_"
+            + str(idx_start)
+            + "--"
+            + str(idx_stop)
+            + ".h5"
+        )
     else:
-        chunkfile = in_dir + "fmat_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
-        outfile = out_dir + "endpoints_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
+        chunkfile = (
+            in_dir
+            + "fmat_"
+            + str(idx)
+            + "_"
+            + str(idx_start)
+            + "--"
+            + str(idx_stop)
+            + ".h5"
+        )
+        outfile = (
+            out_dir
+            + "endpoints_"
+            + str(idx)
+            + "_"
+            + str(idx_start)
+            + "--"
+            + str(idx_stop)
+            + ".h5"
+        )
     print("Obtaining endpoints from", chunkfile, "writing to", outfile)
 
     pid_dfs = []
     for pid in pids["PatientID"]:
-        gridded_patient = grid_patient(pid, grid_size_in_minutes, window_size_in_minutes, reduced, chunkfile=chunkfile)
+        gridded_patient = grid_patient(
+            pid,
+            grid_size_in_minutes,
+            window_size_in_minutes,
+            reduced,
+            chunkfile=chunkfile,
+        )
         if not gridded_patient is None:
             gridded_patient.reset_index(inplace=True)
             pid_dfs.append(gridded_patient)
@@ -144,11 +187,19 @@ def process_chunk(idx, reduced=False):
             print("No data for patient", pid)
     df = pd.concat(pid_dfs)
     df["MAP_below_threshold"] = df["MAP_below_threshold"].astype(str)
-    df["interpolated_lactate_above_threshold"] = df["interpolated_lactate_above_threshold"].astype(str)
+    df["interpolated_lactate_above_threshold"] = df[
+        "interpolated_lactate_above_threshold"
+    ].astype(str)
     df["lactate_above_threshold"] = df["lactate_above_threshold"].astype(str)
     print(df.dtypes)
     df.to_hdf(
-        outfile, "endpoints", append=False, complevel=5, complib="blosc:lz4", data_columns=["PatientID"], format="table"
+        outfile,
+        "endpoints",
+        append=False,
+        complevel=5,
+        complib="blosc:lz4",
+        data_columns=["PatientID"],
+        format="table",
     )
     print("finished processing chunk", chunkfile)
     return True
@@ -226,14 +277,18 @@ def merge_process_drugs(df, pid):
         # these are NOT missing in Bern
         df["milrinone"] = df.loc[:, milrinone_ID].fillna(method="ffill")
         df["levosimendan"] = df.loc[:, levosimendan_ID].fillna(method="ffill")
-        df["theophyllin"] = df.loc[:, theophyllin_IDs].fillna(method="ffill").sum(axis=1)
+        df["theophyllin"] = (
+            df.loc[:, theophyllin_IDs].fillna(method="ffill").sum(axis=1)
+        )
         # these are missing in Bern
         df["dopamine"] = 0
         df["phenylephrin"] = 0
 
     # epinephrine and norepinephrine must be per minute, per kg, in micrograms (already per-minute in micrograms from pharma table preprocessing)
     df["epinephrine"] = df.loc[:, epinephrine_IDs].fillna(method="ffill").sum(axis=1)
-    df["norepinephrine"] = df.loc[:, norepinephrine_IDs].fillna(method="ffill").sum(axis=1)
+    df["norepinephrine"] = (
+        df.loc[:, norepinephrine_IDs].fillna(method="ffill").sum(axis=1)
+    )
     df["vasopressin"] = df.loc[:, vasopressin_IDs].fillna(method="ffill").sum(axis=1)
     #    df.drop(drug_IDs, inplace=True, axis=1)
     #    df.drop(list(map(lambda x: x + '/min', drug_IDs)), inplace=True, axis=1)
@@ -261,18 +316,31 @@ def add_thresholds_markers(df):
     """
     Denote where thresholds are met, drugs are present, etc.
     """
-    df["lactate_above_threshold"] = df["lactate"] >= 2  # note, this will be updated after we interpolate the lactate
+    df["lactate_above_threshold"] = (
+        df["lactate"] >= 2
+    )  # note, this will be updated after we interpolate the lactate
     df.loc[df["lactate"].isnull(), "lactate_above_threshold"] = np.nan
     df["MAP_below_threshold"] = df[MAP_ID] <= 65
     df.loc[df[MAP_ID[0]].isnull(), "MAP_below_threshold"] = np.nan
     # level 1: presence of any of these
     df["level1_drugs_present"] = (
-        df.loc[:, ["dobutamine", "milrinone", "levosimendan", "theophyllin", "dopamine", "phenylephrin"]] > 0
+        df.loc[
+            :,
+            [
+                "dobutamine",
+                "milrinone",
+                "levosimendan",
+                "theophyllin",
+                "dopamine",
+                "phenylephrin",
+            ],
+        ]
+        > 0
     ).any(axis=1)
     # level 2: (nor)epinephrine between 0 and 0.1 microg/kg/min
-    df["level2_drugs_present"] = ((df.loc[:, "epinephrine"] > 0) & (df.loc[:, "epinephrine"] < 0.1 * df["weight"])) | (
-        (df["norepinephrine"] > 0) & (df["norepinephrine"] < 0.1 * df["weight"])
-    )
+    df["level2_drugs_present"] = (
+        (df.loc[:, "epinephrine"] > 0) & (df.loc[:, "epinephrine"] < 0.1 * df["weight"])
+    ) | ((df["norepinephrine"] > 0) & (df["norepinephrine"] < 0.1 * df["weight"]))
     # df['level2_drugs_present'] = ((df.loc[:, 'epinephrine'] > 0) & (df.loc[:, 'epinephrine'] < 0.1*df[weight_ID[0]])) | ((df['norepinephrine'] > 0) & (df['norepinephrine'] < 0.1*df[weight_ID[0]]))
     # level 3: (nor)epinephrine  >= 0.1 microg/kg/min, or any vasopressin
     # df['level3_drugs_present'] = (df['norepinephrine'] >= 0.1*df[weight_ID[0]]) | (df['epinephrine'] >= 0.1*df[weight_ID[0]]) | (df['vasopressin'] > 0)
@@ -293,9 +361,24 @@ def add_weight(df, pid):
     df["weight"] = df[weight_ID].fillna(method="ffill").fillna(method="bfill")
     # if anything is missing at this point it means the patient has no weight values
     if df["weight"].isnull().sum() > 0:
-        print("Weight is missing on patient", pid, " - imputing from height if possible")
-        typical_weight_dict = np.load(paths.misc_dir + "typical_weight_dict.npy", allow_pickle=True).item()
-        bmi_dict = np.load(paths.misc_dir + "median_bmi_dict.npy", allow_pickle=True).item()
+        print(
+            "Weight is missing on patient", pid, " - imputing from height if possible"
+        )
+        if mimic:
+            typical_weight_dict = np.load(
+                "circulatory_status/resources/typical_weight_dict.npy",
+                allow_pickle=True,
+            ).item()
+            bmi_dict = np.load(
+                "circulatory_status/resources/median_bmi_dict.npy", allow_pickle=True
+            ).item()
+        else:
+            typical_weight_dict = np.load(
+                paths.misc_dir + "typical_weight_dict.npy", allow_pickle=True
+            ).item()
+            bmi_dict = np.load(
+                paths.misc_dir + "median_bmi_dict.npy", allow_pickle=True
+            ).item()
         # look for height in the static file - this will exist for mimic at some point
         if mimic:
             static_info = pd.read_hdf(
@@ -305,7 +388,9 @@ def add_weight(df, pid):
             )
         else:
             static_info = pd.read_hdf(
-                paths.clean_dir + in_version + "/static.h5", where="PatientID == " + str(pid), columns=["Sex", "Height"]
+                paths.clean_dir + in_version + "/static.h5",
+                where="PatientID == " + str(pid),
+                columns=["Sex", "Height"],
             )
         height = static_info["Height"].iloc[0]
         patient_sex = static_info["Sex"].iloc[0]
@@ -378,7 +463,9 @@ def add_weight(df, pid):
     return df
 
 
-def grid_patient(pid, grid_size_in_minutes, window_size_in_minutes, reduced, chunkfile=None):
+def grid_patient(
+    pid, grid_size_in_minutes, window_size_in_minutes, reduced, chunkfile=None
+):
     # Note, we load HR so we have the full ICU stay
     if chunkfile is None:
         # get the chunkfile
@@ -388,9 +475,27 @@ def grid_patient(pid, grid_size_in_minutes, window_size_in_minutes, reduced, chu
         idx_start = min(pids["PatientID"])
         idx_stop = max(pids["PatientID"])
         if reduced:
-            chunkfile = in_dir + "reduced_fmat_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
+            chunkfile = (
+                in_dir
+                + "reduced_fmat_"
+                + str(idx)
+                + "_"
+                + str(idx_start)
+                + "--"
+                + str(idx_stop)
+                + ".h5"
+            )
         else:
-            chunkfile = in_dir + "fmat_" + str(idx) + "_" + str(idx_start) + "--" + str(idx_stop) + ".h5"
+            chunkfile = (
+                in_dir
+                + "fmat_"
+                + str(idx)
+                + "_"
+                + str(idx_start)
+                + "--"
+                + str(idx_stop)
+                + ".h5"
+            )
     print("\tprocessing patient " + str(int(pid)))
     p_df = pd.read_hdf(
         chunkfile,
@@ -431,7 +536,10 @@ def grid_patient(pid, grid_size_in_minutes, window_size_in_minutes, reduced, chu
     # interpolate lactate
     interpolate_patient_lactate(p_df, pid, grid_size_in_minutes)
     find_endpoints(
-        p_df, MAP_ID, window_size_in_minutes=window_size_in_minutes, grid_size_in_minutes=grid_size_in_minutes
+        p_df,
+        MAP_ID,
+        window_size_in_minutes=window_size_in_minutes,
+        grid_size_in_minutes=grid_size_in_minutes,
     )
     p_df["PatientID"] = pid
     # DEBUG

@@ -1,4 +1,4 @@
-name: circews
+name: circewstest
 channels:
   - defaults
 dependencies:
@@ -172,4 +172,5 @@ dependencies:
     - llvmlite==0.43.0
     - numba==0.60.0
     - scipy==1.14.0
-prefix: /home/harryw/.conda/envs/circews
+    - .
+prefix: /home/harryw/.conda/envs/circewstest

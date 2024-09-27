@@ -3,6 +3,7 @@
 # data extraction and preprocessing functions for mimic
 
 import glob
+import os
 import sys
 
 import ipdb
@@ -82,6 +83,7 @@ def get_icustayid_lookup():
 def load_excel():
     """hack for now"""
     print("[load_excel] WARNING: this functionality should be refactored")
+    sys.path.append("./dimensionality_reduction")
     sys.path.append("../dimensionality_reduction")
     from perform_dimensionality_reduction import (
         excel_path_lab,
@@ -232,6 +234,7 @@ def subset_table(tablename, varlist, exclusion_list, version):
     # subject id is always the second field
     subj_id = 1
     out_path = mimic_paths.csvs_dir + version + "/" + tablename + "_subset.csv"
+    os.makedirs(mimic_paths.csvs_dir + version, exist_ok=True)
     print("Writing to", out_path)
     table_subset = open(out_path, "w")
     header = table.readline().strip("\n")
@@ -342,6 +345,7 @@ def trim_unify_csvs(skiptable=[np.nan], version=""):
                         df["STORETIME"] = df["CHARTTIME"]
             df_sub = df.loc[:, columns_of_interest]
         output_path = mimic_paths.hdf5_dir + version + "/" + table + "_subset.h5"
+        os.makedirs(mimic_paths.hdf5_dir + version, exist_ok=True)
         df_sub.to_hdf(
             output_path,
             "pivoted",
@@ -603,6 +607,7 @@ def merge_tables(version=""):
     # Fluid balance OUT == hourly urine
     df_merged["vm32"] = df_merged["vm24"]
     output_path = mimic_paths.merged_dir + version + "/reduced/merged.h5"
+    os.makedirs(mimic_paths.merged_dir + version + "/reduced", exist_ok=True)
     df_merged.to_hdf(
         output_path,
         "merged",
@@ -874,6 +879,7 @@ def build_static_table(version=""):
     static.loc[static["Height"] <= 0, "Height"] = np.nan
 
     static_path = mimic_paths.merged_dir + version + "/static.h5"
+    os.makedirs(mimic_paths.merged_dir + version, exist_ok=True)
     print("Saving static table to", static_path, "shape:", static.shape)
     static["Surgical"] = static["Surgical"].astype(str)
     static.to_hdf(
