@@ -59,11 +59,6 @@ def parse_cmd_args():
     #     default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle",
     #     help="Chunk file pickle version output for the Bern database",
     # )
-    parser.add_argument(
-        "--mimic_chunk_file_output",
-        default="/data/qmia/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_181023.pickle",
-        help="Chunk file pickle version output for the MIMIC database",
-    )
     parser.add_argument("--version", required=True, help="Version to run")
 
     # Arguments
