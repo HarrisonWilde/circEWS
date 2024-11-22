@@ -4,6 +4,7 @@ encodings which is later used during adaptive imputation.
 """
 
 import argparse
+import os
 import sys
 
 import circews.functions.util.io as mlhc_io
@@ -172,54 +173,54 @@ def parse_cmd_args():
     # Input paths
     parser.add_argument(
         "--current_varref_table",
-        default="/data/qmia/mimiciii/validation/misc_derived/ref_excel/varref_excel_v6.tsv",
+        default="./preprocessing/resource/varref_excel_v6.tsv",
         help="Varref meta-data table",
     )
     parser.add_argument(
         "--current_labref_table",
-        default="/data/qmia/mimiciii/validation/misc_derived/ref_excel/labref_excel_v6.tsv",
+        default="./preprocessing/resource/labref_excel_v6.tsv",
         help="Labref meta-data table",
     )
     parser.add_argument(
         "--var_list_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/var_list_v6.txt",
+        default="./preprocessing/resource/var_list_v6.txt",
         help="List of non-lab variables",
     )
     parser.add_argument(
         "--labvar_list_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/labvar_list_v6.txt",
+        default="./preprocessing/resource/labvar_list_v6.txt",
         help="List of lab variables",
     )
     parser.add_argument(
         "--meta_var_list_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_var_list_v6.txt",
+        default="./preprocessing/resource/meta_var_list_v6.txt",
         help="List of meta non-lab variables",
     )
     parser.add_argument(
         "--meta_labvar_list_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_labvar_list_v6.txt",
+        default="./preprocessing/resource/meta_labvar_list_v6.txt",
         help="List of meta lab variables",
     )
 
     # Output paths
     parser.add_argument(
         "--normalval_map_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/normalval_map_v6.pickle",
+        default="./external_validation/resource/normalval_map.pickle",
         help="Path where normal value dict is stored",
     )
     parser.add_argument(
         "--varencoding_map_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/varencoding_map_v6.pickle",
+        default="./external_validation/resource/varencoding_map.pickle",
         help="Path where the encoding dict is stored",
     )
     parser.add_argument(
         "--meta_normalval_map_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_normalval_map_v6.pickle",
+        default="./external_validation/resource/meta_normalval_map.pickle",
         help="Path where normal value dict is stored for meta variables",
     )
     parser.add_argument(
         "--meta_varencoding_map_path",
-        default="/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_varencoding_map_v6.pickle",
+        default="./external_validation/resource/meta_varencoding_map.pickle",
         help="Path where the encoding dict is stored for meta variables",
     )
 

@@ -241,26 +241,6 @@ def save_ml_input(configs):
 def parse_cmd_args():
     parser = argparse.ArgumentParser()
 
-    # Input paths
-    BERN_PID_MAP_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/id_lists/v6b/patients_in_clean_chunking_50.pickle"
-    MIMIC_PID_MAP_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/misc_derived/id_lists/chunks_181023.pickle"
-    TEMPORAL_SPLIT_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/temporal_split_180918.pickle"
-    MIMIC_ALL_PID_LIST_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/pids_with_endpoint_data.csv.181103"
-    BERN_IMPUTED_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/5b_binarized/binarized_v6b_downsample_upsample_rev2"
-    MIMIC_IMPUTED_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/imputed/imputed_181023"
-    BERN_LABEL_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/6_labels/targets_v6b_downsample_upsample_binarized_rev2"
-    MIMIC_LABEL_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/labels/targets_181023"
-    META_VARENC_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/meta_varencoding_map_v6.pickle"
-    VARENC_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/varencoding_map_v6.pickle"
-    META_VARPROP_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_reduced_v6b"
-    VARPROP_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/imputation_v6b"
-    PHARMA_ACTING_PERIOD_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/qmia/pharma_acting_period_v6_meta.npy"
-
-    # Output paths
-    LOG_DIR = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/misc_derived/mhueser/log"
-    BERN_OUTPUT_FEATURES_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/7_ml_input/v6b_downsample_upsample_binarized_rev2"
-    MIMIC_OUTPUT_FEATURES_PATH = "/cluster/work/grlab/clinical/Inselspital/DataReleases/01-19-2017/InselSpital/external_validation/ml_input/181023"
-
     # Arguments
     parser.add_argument(
         "--run_mode",
@@ -269,7 +249,7 @@ def parse_cmd_args():
     )
     parser.add_argument(
         "--split_key",
-        default="temporal_5",
+        default="random_5",
         help="For which split should the ML input be produced?",
     )
     parser.add_argument(
@@ -326,7 +306,7 @@ def parse_cmd_args():
     )
     parser.add_argument(
         "--dataset",
-        default="bern",
+        default="mimic",
         help="For which data-set should features be computed?",
     )
     parser.add_argument(
@@ -334,89 +314,51 @@ def parse_cmd_args():
         default="finite",
         help="In mode <finite>, finite input values are expected, <missing> allows NANs",
     )
-
-    # Paths
-    parser.add_argument(
-        "--log_dir", default=LOG_DIR, help="Logging directory for cluster mode"
-    )
-    parser.add_argument(
-        "--bern_pid_map_path",
-        default=BERN_PID_MAP_PATH,
-        help="Path of the patient ID batch map",
-    )
-    parser.add_argument(
-        "--mimic_pid_map_path",
-        default=MIMIC_PID_MAP_PATH,
-        help="Path of the patient ID batch map",
-    )
-    parser.add_argument(
-        "--temporal_split_path",
-        default=TEMPORAL_SPLIT_PATH,
-        help="Path of the temporal split descriptor",
-    )
-    parser.add_argument(
-        "--bern_imputed_path",
-        default=BERN_IMPUTED_PATH,
-        help="Path of the impute directory from which to load the input? [Bern data-set]",
-    )
-    parser.add_argument(
-        "--mimic_imputed_path",
-        default=MIMIC_IMPUTED_PATH,
-        help="Path of the impute directory from which to load the input? [MIMIC data-set]",
-    )
-    parser.add_argument(
-        "--bern_label_path",
-        default=BERN_LABEL_PATH,
-        help="Path of the label directory/version from which to load the input? [Bern data-set]",
-    )
-    parser.add_argument(
-        "--mimic_label_path",
-        default=MIMIC_LABEL_PATH,
-        help="Path of the label directory/version from which to load the input? [MIMIC data-set]",
-    )
-    parser.add_argument(
-        "--bern_output_features_path",
-        default=BERN_OUTPUT_FEATURES_PATH,
-        help="Path of the output directory where to store features for the Bern data-set",
-    )
-    parser.add_argument(
-        "--mimic_output_features_path",
-        default=MIMIC_OUTPUT_FEATURES_PATH,
-        help="Path of the output directory where to store features for the MIMIC data-set",
-    )
-    parser.add_argument(
-        "--meta_varenc_map_path",
-        default=META_VARENC_PATH,
-        help="Location of the meta variable encoding map to use",
-    )
-    parser.add_argument(
-        "--varenc_map_path",
-        default=VARENC_PATH,
-        help="Location of the variable encoding map to use",
-    )
-    parser.add_argument(
-        "--meta_varprop_map_path",
-        default=META_VARPROP_PATH,
-        help="Location of the meta variable property map to use",
-    )
-    parser.add_argument(
-        "--varprop_map_path",
-        default=VARPROP_PATH,
-        help="Location of the variable property map to use",
-    )
-    parser.add_argument(
-        "--pharma_acting_period_map_path",
-        default=PHARMA_ACTING_PERIOD_PATH,
-        help="Location of the pharma acting period map",
-    )
-    parser.add_argument(
-        "--mimic_all_pid_list_path",
-        default=MIMIC_ALL_PID_LIST_PATH,
-        help="List of all PIDs that should be processed for the MIMIC data-set",
-    )
+    parser.add_argument("--version", type=str, required=True, help="Version to run")
 
     args = parser.parse_args()
     configs = vars(args)
+
+    # Input paths
+    configs["mimic_pid_map_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/misc_derived/id_lists/chunks_{configs['version']}.pickle"
+    )
+    configs["temporal_split_path"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/split_{configs['version']}.pickle"
+    )
+    configs["mimic_all_pid_list_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.{configs['version']}"
+    )
+    configs["mimic_imputed_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/imputed/imputed_{configs['version']}"
+    )
+    configs["mimic_label_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/labels/targets_{configs['version']}"
+    )
+    configs["meta_varprop_map_path"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/imputation_reduced_{configs['version']}"
+    )
+    configs["varprop_map_path"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/imputation_{configs['version']}"
+    )
+    configs["meta_varenc_map_path"] = os.path.abspath(
+        "./external_validation/resource/meta_varencoding_map.pickle"
+    )
+    configs["varenc_map_path"] = os.path.abspath(
+        "./external_validation/resource/varencoding_map.pickle"
+    )
+    configs["pharma_acting_period_map_path"] = os.path.abspath(
+        "./external_validation/resource/pharma_acting_period_meta.npy"
+    )
+
+    # Output paths
+    configs["log_dir"] = (
+        f"/data/qmia/mimiciii/validation/misc_derived/{configs['version']}/log"
+    )
+    configs["mimic_output_features_path"] = (
+        f"/data/qmia/mimiciii/validation/external_validation/ml_input/{configs['version']}"
+    )
+
     return configs
 
 

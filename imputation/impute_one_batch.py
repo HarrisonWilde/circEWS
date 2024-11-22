@@ -65,8 +65,8 @@ def impute_one_batch(configs):
         ]
         merged_reduced_base_path = configs["mimic_reduced_merged_path"]
         merged_base_path = configs["mimic_merged_path"]
-        output_reduced_base_path = configs["mimic_imputed_reduced_dir"]
-        output_base_path = configs["mimic_imputed_dir"]
+        output_reduced_base_path = configs["mimic_imputed_reduced_path"]
+        output_base_path = configs["mimic_imputed_path"]
 
     pid_list = batch_map[batch_idx]
     selected_pids = list(set(pid_list).intersection(set(all_pids)))
@@ -151,7 +151,7 @@ def impute_one_batch(configs):
     tf_model.set_normal_vals(normal_dict)
     first_write = True
 
-    print("Number of patient IDs: {}".format(len(selected_pids), flush=True))
+    print("Number of patient IDs: {}".format(len(selected_pids)))
 
     for pidx, pid in enumerate(selected_pids):
         if dim_reduced_data:
@@ -196,7 +196,7 @@ def impute_one_batch(configs):
         if not configs["debug_mode"]:
             imputed_df.to_hdf(
                 os.path.join(output_dir, "batch_{}.h5".format(batch_idx)),
-                configs["imputed_dset_id"],
+                key=configs["imputed_dset_id"],
                 complevel=configs["hdf_comp_level"],
                 complib=configs["hdf_comp_alg"],
                 format="table",
@@ -208,10 +208,12 @@ def impute_one_batch(configs):
         gc.collect()
         first_write = False
 
-        if (pidx + 1) % 100 == 0:
+        if (pidx + 1) % 20 == 0:
             print(
-                "Thread {}: {:.2f} %".format(
-                    batch_idx, (pidx + 1) / len(selected_pids) * 100
+                "Job {}_{}: {:.2f} %".format(
+                    configs["split_key"],
+                    batch_idx,
+                    (pidx + 1) / len(selected_pids) * 100,
                 ),
                 flush=True,
             )
@@ -232,7 +234,13 @@ def parse_cmd_args():
         "./circulatory_status/resources/median_bmi_dict.npy"
     )
     META_VARENCODING_MAP_PATH = os.path.abspath(
-        "./external_validation/resource/meta_varencoding_map_v6.pickle"
+        "./external_validation/resource/meta_varencoding_map.pickle"
+    )
+    META_NORMALVAL_MAP_PATH = os.path.abspath(
+        "./external_validation/resource/meta_normalval_map.pickle"
+    )
+    NORMALVAL_MAP_PATH = os.path.abspath(
+        "./external_validation/resource/normalval_map.pickle"
     )
 
     # Output paths
@@ -253,6 +261,16 @@ def parse_cmd_args():
         "--meta_varencoding_map_path",
         default=META_VARENCODING_MAP_PATH,
         help="Dictionary mapping variable IDs to variable encoding to distinguish between processing categories",
+    )
+    parser.add_argument(
+        "--meta_normalval_map_path",
+        default=META_NORMALVAL_MAP_PATH,
+        help="Dictionary mapping variable IDs to normal values",
+    )
+    parser.add_argument(
+        "--normalval_map_path",
+        default=NORMALVAL_MAP_PATH,
+        help="Dictionary mapping variable IDs to normal values",
     )
     parser.add_argument(
         "--log_dir", default=LOG_DIR, help="Location of the log directory"
@@ -315,19 +333,13 @@ def parse_cmd_args():
     configs = vars(parser.parse_args())
 
     configs["mimic_static_info_path"] = (
-        f"/data/qmia/mimiciii/validation/external_validation/merged/{configs['version']}/static.h5"
+        f"/data/qmia/mimiciii/validation/external_validation/imputed/imputed_{configs['version']}/reduced/{configs['split_key']}/static.h5"
     )
     configs["imputation_param_dict_reduced"] = (
         f"/data/qmia/mimiciii/validation/misc_derived/imputation_reduced_{configs['version']}"
     )
     configs["imputation_param_dict"] = (
         f"/data/qmia/mimiciii/validation/misc_derived/imputation_{configs['version']}"
-    )
-    configs["meta_normalval_map_path"] = (
-        f"/data/qmia/mimiciii/validation/misc_derived/meta_normalval_map_{configs['version']}.pickle"
-    )
-    configs["normalval_map_path"] = (
-        f"/data/qmia/mimiciii/validation/misc_derived/normalval_map_{configs['version']}.pickle"
     )
     configs["mimic_merged_path"] = (
         f"/data/qmia/mimiciii/validation/external_validation/merged/{configs['version']}"
@@ -342,10 +354,12 @@ def parse_cmd_args():
     configs["mimic_all_pid_list_path"] = (
         f"/data/qmia/mimiciii/validation/external_validation/pids_with_endpoint_data.csv.{configs['version']}"
     )
-    configs["mimic_imputed_dir"] = (
+    configs["mimic_imputed_path"] = (
         f"/data/qmia/mimiciii/validation/external_validation/imputed/imputed_{configs['version']}"
     )
-    configs["mimic_imputed_reduced_dir"] = f"{configs['mimic_imputed_dir']}/reduced"
+    os.makedirs(configs["mimic_imputed_path"], exist_ok=True)
+    configs["mimic_imputed_reduced_path"] = f"{configs['mimic_imputed_path']}/reduced"
+    os.makedirs(configs["mimic_imputed_reduced_path"], exist_ok=True)
 
     assert configs["run_mode"] in ["CLUSTER", "INTERACTIVE"]
     assert configs["data_mode"] in ["reduced", "non_reduced"]

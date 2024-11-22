@@ -11,8 +11,8 @@ import numpy as np
 import pandas as pd
 import paths
 
-excel_path_var = paths.root_dir + "misc_derived/ref_excel/varref_excel_v6.tsv"
-excel_path_lab = paths.root_dir + "misc_derived/ref_excel/labref_excel_v6.tsv"
+excel_path_var = "./preprocessing/resource/varref_excel_v6.tsv"
+excel_path_lab = "./preprocessing/resource/labref_excel_v6.tsv"
 
 in_version = "v6b"
 
@@ -29,18 +29,24 @@ def preproc_excel(excel_var, excel_lab):
     excel = excel.loc[excel["VariableID"] > 0, :]
     # change IDs to have p, v
     pharma_rows = excel["Type"] == "Pharma"
-    excel.loc[pharma_rows, "VariableID"] = list(map(lambda x: "p" + str(int(x)), excel.loc[pharma_rows, "VariableID"]))
+    excel.loc[pharma_rows, "VariableID"] = list(
+        map(lambda x: "p" + str(int(x)), excel.loc[pharma_rows, "VariableID"])
+    )
     excel.loc[~pharma_rows, "VariableID"] = list(
         map(lambda x: "v" + str(int(x)), excel.loc[~pharma_rows, "VariableID"])
     )
     excel["Subgroup"] = excel["Subgroup"].fillna("Unknown")
     # convert fractions in text into floats, for flow rate
     fractions = excel.loc[
-        excel["UnitConversionFactor"].notnull() & (excel["MetaVariableUnit"] == "Flow rate"), "UnitConversionFactor"
+        excel["UnitConversionFactor"].notnull()
+        & (excel["MetaVariableUnit"] == "Flow rate"),
+        "UnitConversionFactor",
     ]
     fractions_as_floats = list(map(lambda x: np.float32(eval(x)), fractions))
     excel.loc[
-        excel["UnitConversionFactor"].notnull() & (excel["MetaVariableUnit"] == "Flow rate"), "UnitConversionFactor"
+        excel["UnitConversionFactor"].notnull()
+        & (excel["MetaVariableUnit"] == "Flow rate"),
+        "UnitConversionFactor",
     ] = fractions_as_floats
     return excel
 
@@ -77,7 +83,9 @@ def get_mID_column(m_excel, df, IDs):
             # need scaling factors
             scaling_factors = []
             for ID in IDs:
-                scaling_factor = m_excel.loc[m_excel["VariableID"] == ID, "UnitConversionFactor"].values[0]
+                scaling_factor = m_excel.loc[
+                    m_excel["VariableID"] == ID, "UnitConversionFactor"
+                ].values[0]
                 scaling_factors.append(scaling_factor)
             # sometimes there is no scaling factor - assume 1
             if np.isnan(scaling_factors).any():
@@ -149,7 +157,13 @@ def process_chunk(chunkname, excel):
         df_reduced[mID] = mID_column
     print("Saving to", outpath)
     df_reduced.to_hdf(
-        outpath, "reduced", append=False, complevel=5, complib="blosc:lz4", data_columns=["PatientID"], format="table"
+        outpath,
+        "reduced",
+        append=False,
+        complevel=5,
+        complib="blosc:lz4",
+        data_columns=["PatientID"],
+        format="table",
     )
     # csv is a lot quicker...
     # df_reduced.to_csv(merged_reduced_csv, mode='a')

@@ -206,7 +206,7 @@ def save_imputation_params(configs):
 def parse_cmd_args():
     # Input paths
     META_VARENCODING_MAP_PATH = os.path.abspath(
-        "./external_validation/resource/meta_varencoding_map_v6.pickle"
+        "./external_validation/resource/meta_varencoding_map.pickle"
     )
 
     # Output paths
